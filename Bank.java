@@ -1,12 +1,31 @@
-// Cursor Parking Lot
-// #=================#
-// |                 |
-// |                 |
-// |                 |
-// #=================#
+import java.util.ArrayList;
 
 public class Bank {
-    public static void main(String[] args) {
-        System.out.println("Welcome to the Bank class");
+    private int[] upgradeDollarCosts;
+    private int[] upgradeCreditCosts;
+    private Dice die;
+
+    public Bank() {
+
+    }
+
+    public int[] getUpgradeDollarCosts() {
+        return null;
+    }
+
+    public int[] getUpgradeCreditCosts() {
+        return null;
+    }
+
+    public Dice getDie() {
+        return null;
+    }
+
+    public int getDollarUpgradeCost(int desiredRank) {
+        return 0;
+    }
+
+    public int getCreditUpgradeCost(int desiredRank) {
+        return 0;
     }
 }

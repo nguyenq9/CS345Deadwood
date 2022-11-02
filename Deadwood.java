@@ -1,12 +1,10 @@
-// Cursor Parking Lot
-// #=================#
-// |                 |
-// |                 |
-// |                 |
-// #=================#
+import java.util.ArrayList;
 
-public class Deadwood {
+public class Deadwood {  
+    private ArrayList<PlayerController> players;
+    private BoardController boardController;
+
     public static void main(String[] args) {
-        System.out.println("Welcome to the Deadwood class");
+        // main stuff
     }
 }

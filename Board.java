@@ -1,12 +1,10 @@
-// Cursor Parking Lot
-// #=================#
-// |                 |
-// |                 |
-// |                 |
-// #=================#
+import java.util.ArrayList;
 
 public class Board{
-    public static void main(String[] args) {
-        System.out.println("Welcome to the Board class"); 
+    ArrayList<Location> locations;
+    Trailer trailer;
+    
+    public Board () {
+
     }
 }

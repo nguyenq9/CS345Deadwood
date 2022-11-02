@@ -1,12 +1,14 @@
-// Cursor Parking Lot
-// #=================#
-// |                 |
-// |                 |
-// |                 |
-// #=================#
+import java.util.ArrayList;
 
 public class BoardView {
-    public static void main(String[] args) {
-        System.out.println("Welcome to the BoardView class");
+
+    BoardController boardController;
+
+    public BoardView() {
+
+    }
+
+    void displayBoard(ArrayList<Location> locations) {
+        // Display the board
     }
 }
