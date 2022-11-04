@@ -1,5 +1,7 @@
 public class Dice{
-    public int roll() {
+
+    public static int roll() {
         return 0;
     }
+    
 }

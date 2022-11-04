@@ -1,31 +1,30 @@
 import java.util.ArrayList;
 
 public class Bank {
-    private int[] upgradeDollarCosts;
-    private int[] upgradeCreditCosts;
-    private Dice die;
+    private static int[] upgradeDollarCosts;
+    private static int[] upgradeCreditCosts;
 
-    public Bank() {
+    public static void payActingRewards(PlayerController player, boolean onCard, boolean success) {
 
     }
 
-    public int[] getUpgradeDollarCosts() {
+    public static void payBonusRewards(Set set) {
+
+    }
+
+    public static int[] getUpgradeDollarCosts() {
         return null;
     }
 
-    public int[] getUpgradeCreditCosts() {
+    public static int[] getUpgradeCreditCosts() {
         return null;
     }
 
-    public Dice getDie() {
-        return null;
-    }
-
-    public int getDollarUpgradeCost(int desiredRank) {
+    public static int getDollarUpgradeCost(int desiredRank) {
         return 0;
     }
 
-    public int getCreditUpgradeCost(int desiredRank) {
+    public static int getCreditUpgradeCost(int desiredRank) {
         return 0;
     }
 }

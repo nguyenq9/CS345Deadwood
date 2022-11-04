@@ -4,7 +4,7 @@ public class Board{
     ArrayList<Location> locations;
     Trailer trailer;
     
-    public Board () {
+    public Board (ArrayList<Location> locations) {
 
     }
 }

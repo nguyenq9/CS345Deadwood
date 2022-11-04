@@ -1,14 +1,16 @@
 import java.util.ArrayList;
 
 public class Deadwood {  
-    private ArrayList<PlayerController> players;
-    private BoardController boardController;
-
-    public void setUpGame(BoardController boardController) {
-
-    }
+    private static ArrayList<PlayerController> players;
+    private static BoardController board;
+    private static int maxDays;
 
     public static void main(String[] args) {
-        // main stuff
+        // Make calls to Setup to initialize game components
+        // players = SetUp.initializePlayers(8);
+        // board = SetUp.initializeBoard();
+        // maxDays = SetUp.getMaxDays(8);
+
+        // Big loop to control turns
     }
 }

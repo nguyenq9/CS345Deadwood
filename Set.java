@@ -18,4 +18,17 @@ public class Set implements Location {
     public String getLocationType() {
         return "Set";
     }
+
+    public Scene getScene() {
+        return scene;
+    }
+
+    public ArrayList<Role> getRoles() {
+        return roles;
+    }
+
+    public boolean isWrapped() {
+        return wrapped;
+    }
+
 }

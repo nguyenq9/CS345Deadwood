@@ -17,7 +17,7 @@ public class Scene {
         return false;
     }
 
-    public Role[] getRoles() {
+    public ArrayList<Role> getRoles() {
         return null;
     }
 

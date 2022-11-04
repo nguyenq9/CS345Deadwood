@@ -1,11 +1,9 @@
 public class PlayerController {
     private Player player;
-    private Bank bank;
     private PlayerView playerView;
 
-    public PlayerController(Player player, Bank bank, PlayerView playerView) {
+    public PlayerController(Player player, PlayerView playerView) {
         // this.player = player;
-        // this.bank = bank;
         // this.playerView = playerView;
     }
 
@@ -79,6 +77,7 @@ public class PlayerController {
         // Adjust Player credits
     }
 
-    public void promptTurn() { 
+    public void promptTurn() {
+
     }
 }
