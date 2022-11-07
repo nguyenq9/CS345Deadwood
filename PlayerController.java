@@ -8,73 +8,65 @@ public class PlayerController {
     }
 
     public String getPlayerName(){
-        // Returns Player name
-        return null;
+        return player.getName();
     }
 
     public int getPlayerDollars() {
-        // Returns Player's dollars
-        return 0;
+        return player.getDollars();
     }
 
     public int getPlayerCredits() {
-        // Returns Player's credits
-        return 0;
+        return player.getCredits();
     }
 
     public int getPlayerRank() {
-        // Return Player's rank
-        return 0;
+        return player.getRank();
     }
 
     public int getPlayerPracChip() {
-        // Return Player's pracChip
-        return 0;
+        return player.getPracChip();
     }
 
     public Role getPlayerCurrRole() {
-        // Return Player's currRole
-        return null;
+        return player.getCurrRole();
     }
 
     public Location getPlayerCurrLocation() {
-        // Return Player's currLocation
-        return null;
+        return player.getCurrLocation();
     }
 
-    public void setPlayerName() {
-        // Set Player name
+    public void setPlayerName(String newName) {
+        player.setName(newName);
     }
 
-    public void setPlayerDollars() {
-        // Set Player dollars
+    public void setPlayerDollars(int newDollars) {
+        player.setDollars(newDollars);
     }
 
-    public void setPlayerCredits() {
-        // Set Player Credits
+    public void setPlayerCredits(int newCredits) {
+        player.setCredits(newCredits);
     }
 
-    public void setPlayerRank() {
-        // Set Player rank
+    public void setPlayerRank(int newRank) {
+        player.setRank(newRank);
     }
 
-    public void setPlayerPracChip() {
-        // Set Player pracChip
-    }
-    public void setPlayerCurrRole() {
-        // Set Player currRole
+    public void setPlayerPracChip(int newPracChip) {
+        player.setPracChip(newPracChip);
     }
 
-    public void setPlayerCurrLocation() {
-        // Set Player currLocation
+    public void setPlayerCurrRole(Role newRole) {
+        player.setCurrRole(newRole);
+    }
+
+    public void setPlayerCurrLocation(Location newLocation) {
+        player.setCurrLocation(newLocation);
     }
 
     public void adjustDollars() {
-        // Adjust player dollars
     }
 
     public void adjustCredits() {
-        // Adjust Player credits
     }
 
     public void promptTurn() {

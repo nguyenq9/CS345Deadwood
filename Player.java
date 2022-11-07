@@ -9,79 +9,78 @@ public class Player {
 
     // Default number of players
     public Player(String name) {
-        // this.name = name;
-        // this.dollars = 0;
-        // this.credits = 0;
-        // this.rank = 1;
-        // this.pracChip = 0;
+        this.name = name;
+        this.dollars = 0;
+        this.credits = 0;
+        this.rank = 1;
+        this.pracChip = 0;
         // this.currRole = null;
-        // Trailer trailer = new Trailer();
         // this.currLocation = trailer;
     }
 
     public Player(String name, int credits, int rank) {
-
+        this.name = name;
+        this.dollars = 0;
+        this.credits= credits;
+        this.rank = rank;
+        this.pracChip = 0;
+        this.currRole = null;
+        // Trailer trailer = new Trailer();
+        // this.currLocation = trailer;
     }
 
-    public String getName(){
-        // Returns Player name
-        return null;
+    public String getName(){        
+        return name;
     }
 
     public int getDollars() {
-        // Returns Player's dollars
-        return 0;
+        return dollars;
     }
 
     public int getCredits() {
-        // Returns Player's credits
-        return 0;
+        return credits;
     }
 
     public int getRank() {
-        // Return Player's rank
-        return 0;
+        return rank;
     }
 
     public int getPracChip() {
-        // Return Player's pracChip
-        return 0;
+        return pracChip;
     }
 
     public Role getCurrRole() {
-        // Return Player's currRole
-        return null;
+        return currRole;
     }
 
     public Location getCurrLocation() {
-        // Return Player's currLocation
-        return null;
+        return currLocation;
     }
 
-    public void setName() {
-        // Set Player name
+    public void setName(String newName) {
+        this.name = newName;
     }
 
-    public void setDollars() {
-        // Set Player dollars
+    public void setDollars(int newDollars) {
+        this.dollars = newDollars;
     }
 
-    public void setCredits() {
-        // Set Player Credits
+    public void setCredits(int newCredits) {
+        this.credits = newCredits;
     }
 
-    public void setRank() {
-        // Set Player rank
+    public void setRank(int newRank) {
+        this.rank = newRank;
     }
 
-    public void setPracChip() {
-        // Set Player pracChip
+    public void setPracChip(int newPracChip) {
+        this.pracChip = newPracChip;
     }
-    public void setCurrRole() {
-        // Set Player currRole
+    public void setCurrRole(Role newRole) {
+        this.currRole = newRole;
     }
 
-    public void setCurrLocation() {
-        // Set PLayer currLocation
+    public void setCurrLocation(Location newLocation) {
+        this.currLocation = newLocation;
     }
 }
