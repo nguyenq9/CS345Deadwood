@@ -3,8 +3,8 @@ public class PlayerController {
     private PlayerView playerView;
 
     public PlayerController(Player player, PlayerView playerView) {
-        // this.player = player;
-        // this.playerView = playerView;
+        this.player = player;
+        this.playerView = playerView;
     }
 
     public String getPlayerName(){
@@ -63,13 +63,4 @@ public class PlayerController {
         player.setCurrLocation(newLocation);
     }
 
-    public void adjustDollars() {
-    }
-
-    public void adjustCredits() {
-    }
-
-    public void promptTurn() {
-
-    }
 }

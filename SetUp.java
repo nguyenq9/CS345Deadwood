@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class SetUp {
 
@@ -15,29 +16,52 @@ public class SetUp {
         }
     }
 
-    public static ArrayList<PlayerController> initializePlayers(int players) {
-        // Make instances of players
-        // Figure out the turn order
-        // Assign starting credits
-        // Assign starting rank
-        // Return initialized list of players
-        return null;
+    public static ArrayList<PlayerController> initializePlayers(int numPlayers) {
+        ArrayList<PlayerController> players = new ArrayList<PlayerController>();
+        for (int i = 1; i <= numPlayers; i++) {
+            Player newPlayer = new Player("Player" + i);
+            PlayerView newPlayerView = new PlayerView();
+            PlayerController newPlayerController = new PlayerController(newPlayer, newPlayerView);
+            players.add(newPlayerController);
+        }
+        if (numPlayers == 7 || numPlayers == 8) {
+            assignStartingRank(players);
+        }
+        if (numPlayers == 5 || numPlayers == 6) {
+            assignStartingCredits(players);
+        }
+        assignTurnOrder(players);
+        return players;
     }
 
-    private ArrayList<PlayerController> assignTurnOrder(ArrayList<PlayerController> players) {
-        return null;
+    private static ArrayList<PlayerController> assignTurnOrder(ArrayList<PlayerController> players) {
+        Collections.shuffle(players);
+        return players;
     }
 
-    private void assignStartingRank(ArrayList<PlayerController> players) {
-    
+    private static void assignStartingRank(ArrayList<PlayerController> players) {
+        for (int i = 0; i < players.size(); i++) {
+            players.get(i).setPlayerRank(2);
+        }
     }
 
-    private void assignStartingCredits(ArrayList<PlayerController> players) {
-        
+    private static void assignStartingCredits(ArrayList<PlayerController> players) {
+        int numPlayers = players.size();
+        for (int i = 0; i < numPlayers; i++) {
+            if (numPlayers == 5) {
+                players.get(i).setPlayerCredits(2);
+            } else {
+                players.get(i).setPlayerCredits(4);
+            }
+        }
     }
 
-    public static int getMaxDays(int playerCount) {
-        return 0;
+    public static int getMaxDays(int numPlayers) {
+        if (numPlayers == 2 || numPlayers == 3) {
+            return 3;
+        } else {
+            return 4;
+        }
     }
 
 }

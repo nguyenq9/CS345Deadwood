@@ -7,11 +7,14 @@ public class Role{
     private String roleLine;
     private int[] area;
 
-    public Role(int rank, boolean onCard, String roleName, String roleLine) {
+    public Role(int rank, boolean onCard, String roleName, String roleLine, int[] area) {
         this.rank = rank;
         this.onCard = onCard;
         this.roleLine = roleLine;
         this.roleName = roleName;
+        this.isTaken = false;
+        this.actor = null;
+        this.area = area;
     }
 
     public int getRank() {

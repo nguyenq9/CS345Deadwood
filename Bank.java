@@ -72,4 +72,5 @@ public class Bank {
     public static int getCreditUpgradeCost(int desiredRank) {
         return upgradeCreditCosts[desiredRank - 2];
     }
+
 }

@@ -7,12 +7,16 @@ public class Scene {
     private int sceneNumber;
     private String sceneImg;
     private String sceneName;
-    private int[] area;
+    private String sceneDescription;
 
-    public Scene(int budget, ArrayList<Role> roles) {
+    public Scene(int budget, ArrayList<Role> roles, int sceneNumber, String sceneImg, String sceneName, String sceneDescription) {
         this.budget = budget;
         this.roles = roles;
         this.visible = false;
+        this.sceneNumber = sceneNumber;
+        this.sceneImg = sceneImg;
+        this.sceneName = sceneName;
+        this.sceneDescription = sceneDescription;
     }
 
     public int getBudget() {
@@ -27,8 +31,19 @@ public class Scene {
         return roles;
     }
 
-    public String sceneName() {
+    public String getSceneName() {
         return sceneName;
+    }
+
+    public int getSceneNumber() {
+        return sceneNumber;
+    }
+    public String getSceneImg() {
+        return sceneImg;
+    }
+
+    public String getSceneDescription() {
+        return sceneDescription;
     }
 
     public void setVisible(boolean visible) {
