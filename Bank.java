@@ -6,7 +6,6 @@ public class Bank {
     private static int[] upgradeCreditCosts;
 
     public static void payActingRewards(PlayerController player, boolean onCard, boolean success) {
-        // need to figure out where we decrement the shot counters on success
         if (onCard && success) {
             int totalC = player.getPlayerCredits() + 2;
             player.setPlayerCredits(totalC);

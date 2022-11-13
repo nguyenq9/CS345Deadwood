@@ -64,4 +64,12 @@ public class Set implements Location {
         this.scene = scene;
     }
 
+    public void resetShotCounters() {
+        shotCounters = maxShotCounters;
+    }
+
+	public void decrementShotCounters() {
+        shotCounters--;
+	}
+
 }

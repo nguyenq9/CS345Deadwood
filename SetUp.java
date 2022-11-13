@@ -5,23 +5,40 @@ public class SetUp {
 
     public static BoardController initializeBoard() {
         try {
-            ArrayList<Location> locations = XMLParser.parseBoard();
-            Board board = new Board(locations);
-            BoardView boardView = new BoardView();
-            BoardController boardController = new BoardController(board, boardView);
+            Board board = XMLParser.parseBoard();
+            BoardController boardController = new BoardController(board, GameView.gameView);
             return boardController;
         } catch (Exception e) {
+            System.out.println("ERROR: Failed to parse board");
             // Add code for if the XML Parser throws an error
             return null;
         }
     }
 
-    public static ArrayList<PlayerController> initializePlayers(int numPlayers) {
+    public static ArrayList<Scene> initializeCards() {
+        try {
+            ArrayList<Scene> cardScenes = XMLParser.parseCards();
+            Collections.shuffle(cardScenes);
+            return cardScenes;
+        } catch (Exception e) {
+            System.out.println("ERROR: Failed to parse scenes");
+            // Add code for if the XML Parser throws an error
+            return null;
+        }
+    }
+
+    public static void assignScenes(BoardController board, ArrayList<Scene> scenes) {
+        ArrayList<Set> sets = board.getBoardSets();
+        for (int i = 0; i < sets.size(); i++) {
+            sets.get(i).setScene(scenes.remove(0));
+        }
+    }
+
+    public static ArrayList<PlayerController> initializePlayers(int numPlayers, ArrayList<String> playerNames, Trailer trailer) {
         ArrayList<PlayerController> players = new ArrayList<PlayerController>();
-        for (int i = 1; i <= numPlayers; i++) {
-            Player newPlayer = new Player("Player" + i);
-            PlayerView newPlayerView = new PlayerView();
-            PlayerController newPlayerController = new PlayerController(newPlayer, newPlayerView);
+        for (int i = 0; i < numPlayers; i++) {
+            Player newPlayer = new Player(playerNames.get(i), trailer);
+            PlayerController newPlayerController = new PlayerController(newPlayer, GameView.gameView);
             players.add(newPlayerController);
         }
         if (numPlayers == 7 || numPlayers == 8) {

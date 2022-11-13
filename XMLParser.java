@@ -7,7 +7,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 public class XMLParser {
 
-    public static ArrayList<Location> parseBoardNeighbors(Node parent) throws Exception {
+    private static ArrayList<Location> parseBoardNeighbors(Node parent) throws Exception {
         ArrayList<Location> neighbors = new ArrayList<Location>();
         NodeList children = parent.getChildNodes();
 
@@ -76,17 +76,31 @@ public class XMLParser {
         return roles;
     }
 
-    public static void parseBoardHelper(Node parent, String typer) throws Exception {
-        NodeList children = parent.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node c = children.item(i);
-            String nodeName = c.getNodeName();
-
-            if (!nodeName.equals("#text")) {
-                String name = c.getAttributes().getNamedItem(typer).getNodeValue();
-                System.out.println("  " + name);
+    private static ArrayList<Location> getNeighbors(NodeList attributes, ArrayList<Location> locations) throws Exception {
+        ArrayList<Location> adjacentLocations = new ArrayList<Location>();
+        for (int j = 0; j < attributes.getLength(); j++) {
+            Node attribute = attributes.item(j);
+            String attributeName = attribute.getNodeName();
+            if (attributeName.equals("neighbors")) {
+                adjacentLocations = parseSetNeighbors(attribute, locations);
             }
         }
+        return adjacentLocations;
+    }
+
+    private static int[] getArea(NodeList attributes) throws Exception {
+        int[] area = new int[4];
+        for (int j = 0; j < attributes.getLength(); j++) {
+            Node attribute = attributes.item(j);
+            String attributeName = attribute.getNodeName();
+            if (attributeName.equals("area")) {
+                area[0] = Integer.parseInt(attribute.getAttributes().getNamedItem("x").getNodeValue());
+                area[1] = Integer.parseInt(attribute.getAttributes().getNamedItem("y").getNodeValue());
+                area[2] = Integer.parseInt(attribute.getAttributes().getNamedItem("h").getNodeValue());
+                area[3] = Integer.parseInt(attribute.getAttributes().getNamedItem("w").getNodeValue());
+            }
+        }
+        return area;
     }
 
     private static int getChildCount(Node parent) {
@@ -100,53 +114,35 @@ public class XMLParser {
         return count;
     }
 
-    private static Location parseNonSet(Node location, ArrayList<Location> locations) throws Exception {
+    private static Trailer parseTrailer(Node location, ArrayList<Location> locations) throws Exception {
         NodeList attributes = location.getChildNodes();
-        ArrayList<Location> adjacentLocations = new ArrayList<Location>();
-        int[] area = new int[4];
-
-        for (int j = 0; j < attributes.getLength(); j++) {
-            Node attribute = attributes.item(j);
-            String attributeName = attribute.getNodeName();
-
-            switch (attributeName) {
-                case "neighbors": {
-                    adjacentLocations = parseSetNeighbors(attribute, locations);
-                    break;
-                }
-                case "area": {
-                    area[0] = Integer.parseInt(attribute.getAttributes().getNamedItem("x").getNodeValue());
-                    area[1] = Integer.parseInt(attribute.getAttributes().getNamedItem("y").getNodeValue());
-                    area[2] = Integer.parseInt(attribute.getAttributes().getNamedItem("h").getNodeValue());
-                    area[3] = Integer.parseInt(attribute.getAttributes().getNamedItem("w").getNodeValue());
-                    break;
-                }
-            }
-        }
-        
-        if (location.getNodeName().equals("trailer")) {
-            return new Trailer(adjacentLocations, area);
-        } else if (location.getNodeName().equals("office")) {
-            return new CastingOffice(adjacentLocations, area);
-        } else {
-            return null;
-        }
+        ArrayList<Location> adjacentLocations = getNeighbors(attributes, locations);
+        int[] area = getArea(attributes);
+        return new Trailer(adjacentLocations, area);
     }
 
-    public static ArrayList<Location> parseBoard() throws Exception {
+    private static CastingOffice parseOffice(Node location, ArrayList<Location> locations) throws Exception {
+        NodeList attributes = location.getChildNodes();
+        ArrayList<Location> adjacentLocations = getNeighbors(attributes, locations);
+        int[] area = getArea(attributes);
+        return new CastingOffice(adjacentLocations, area);
+    }
+
+    public static Board parseBoard() throws Exception {
         ArrayList<Location> locations = new ArrayList<Location>();
+        ArrayList<Set> sets = new ArrayList<Set>();
 
         DocumentBuilderFactory myDomFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder myBuilder = myDomFactory.newDocumentBuilder();
         Document myDoc = myBuilder.parse("board.xml");
-        NodeList sets = myDoc.getElementsByTagName("set");
+        NodeList setNodes = myDoc.getElementsByTagName("set");
 
-        for (int i = 0; i < sets.getLength(); i++) {
+        for (int i = 0; i < setNodes.getLength(); i++) {
             
-            Node set = sets.item(i);
-            NodeList attributes = set.getChildNodes();
+            Node setNode = setNodes.item(i);
+            NodeList attributes = setNode.getChildNodes();
 
-            String setName = set.getAttributes().getNamedItem("name").getNodeValue();
+            String setName = setNode.getAttributes().getNamedItem("name").getNodeValue();
             ArrayList<Role> setRoles = new ArrayList<Role>();
             int setMaxShots = 0;
             int[] setArea = new int[4];
@@ -173,19 +169,21 @@ public class XMLParser {
                     }
                 }
             }
-            locations.add(new Set(setName, setRoles, setMaxShots, setArea));
+            Set set = new Set(setName, setRoles, setMaxShots, setArea);
+            sets.add(set);
+            locations.add(set);
         }
 
-        Node trailer = myDoc.getElementsByTagName("trailer").item(0);
-        Location t = parseNonSet(trailer, locations);
-        
-        locations.add(parseNonSet(trailer, locations));
+        Node trailerNode = myDoc.getElementsByTagName("trailer").item(0);
+        Trailer trailer = parseTrailer(trailerNode, locations);
+        locations.add(trailer);
 
-        Node office = myDoc.getElementsByTagName("office").item(0);
-        locations.add(parseNonSet(office, locations));
+        Node officeNode = myDoc.getElementsByTagName("office").item(0);
+        CastingOffice office = parseOffice(officeNode, locations);
+        locations.add(office);
 
-        for (int i = 0; i < sets.getLength(); i++) {
-            Node set = sets.item(i);
+        for (int i = 0; i < setNodes.getLength(); i++) {
+            Node set = setNodes.item(i);
             NodeList attributes = set.getChildNodes();
             for (int j = 0; j < attributes.getLength(); j++) {
                 Node attribute = attributes.item(j);
@@ -197,7 +195,9 @@ public class XMLParser {
             }
         }
 
-        return locations;
+        Board board = new Board(locations, sets, trailer, office);
+
+        return board;
     }
 
 
@@ -233,51 +233,52 @@ public class XMLParser {
         return cardScenes;
     }
 
-    public static void main(String[] args) throws Exception{
-        // ArrayList<Location> locations = parseBoard();
-        // System.out.println("Number of Locations: " + locations.size());
-        // for (int i = 0; i < locations.size(); i++) {
-        //     Location location = locations.get(i);
-        //     String locationType = location.getLocationType();
-        //     switch (locationType) {
-        //         case "Set":
-        //             Set set = (Set) location;
-        //             System.out.println(set.getLocationName() + ": ");
-        //             System.out.println("Area: x:" + set.getLocationArea()[0] + " y:" + set.getLocationArea()[1] + " h:" + set.getLocationArea()[2] + " w:" + set.getLocationArea()[3]);
-        //             System.out.println(set.getMaxShotCounters() + " Shot Counters");
-        //             System.out.println("Locations:");
-        //             for (int j = 0; j < set.getAdjacentLocations().size(); j++) {
-        //                 System.out.println("  " + set.getAdjacentLocations().get(j).getLocationName());
-        //             }
-        //             System.out.println("Roles:");
-        //             for (int j = 0; j < set.getRoles().size(); j++) {
-        //                 System.out.println("  " + set.getRoles().get(j).getRoleName() + ": " + set.getRoles().get(j).getRoleLine());
-        //                 System.out.println("  Area: x:" + set.getRoles().get(j).getArea()[0] + " y:" + set.getRoles().get(j).getArea()[1] + " h:" + set.getRoles().get(j).getArea()[2] + " w:" + set.getRoles().get(j).getArea()[3]);
-        //             }
-        //     }
-        //     System.out.println("");
-        // }
+    // public static void main(String[] args) throws Exception{
+    //     Board board = parseBoard();
+    //     ArrayList<Location> locations = board.getLocations();
+    //     System.out.println("Number of Locations: " + locations.size());
+    //     for (int i = 0; i < locations.size(); i++) {
+    //         Location location = locations.get(i);
+    //         String locationType = location.getLocationType();
+    //         switch (locationType) {
+    //             case "Set":
+    //                 Set set = (Set) location;
+    //                 System.out.println(set.getLocationName() + ": ");
+    //                 System.out.println("Area: x:" + set.getLocationArea()[0] + " y:" + set.getLocationArea()[1] + " h:" + set.getLocationArea()[2] + " w:" + set.getLocationArea()[3]);
+    //                 System.out.println(set.getMaxShotCounters() + " Shot Counters");
+    //                 System.out.println("Locations:");
+    //                 for (int j = 0; j < set.getAdjacentLocations().size(); j++) {
+    //                     System.out.println("  " + set.getAdjacentLocations().get(j).getLocationName());
+    //                 }
+    //                 System.out.println("Roles:");
+    //                 for (int j = 0; j < set.getRoles().size(); j++) {
+    //                     System.out.println("  " + set.getRoles().get(j).getRoleName() + ": " + set.getRoles().get(j).getRoleLine());
+    //                     System.out.println("  Area: x:" + set.getRoles().get(j).getArea()[0] + " y:" + set.getRoles().get(j).getArea()[1] + " h:" + set.getRoles().get(j).getArea()[2] + " w:" + set.getRoles().get(j).getArea()[3]);
+    //                 }
+    //         }
+    //         System.out.println("");
+    //     }
 
-        // ArrayList<Scene> cardScenes = parseCards();
-        // System.out.println("Number of Cards: " + cardScenes.size());
-        // for (int i = 0; i < cardScenes.size(); i++) {
-        //     Scene scene = cardScenes.get(i);
-        //     int budget = scene.getBudget();
-        //     String sceneName = scene.getSceneName();
-        //     int sceneNumber = scene.getSceneNumber();
-        //     String sceneImg = scene.getSceneImg();
-        //     String sceneDescription = scene.getSceneDescription();
-        //     ArrayList<Role> sceneRoles = scene.getRoles();
+    //     ArrayList<Scene> cardScenes = parseCards();
+    //     System.out.println("Number of Cards: " + cardScenes.size());
+    //     for (int i = 0; i < cardScenes.size(); i++) {
+    //         Scene scene = cardScenes.get(i);
+    //         int budget = scene.getBudget();
+    //         String sceneName = scene.getSceneName();
+    //         int sceneNumber = scene.getSceneNumber();
+    //         String sceneImg = scene.getSceneImg();
+    //         String sceneDescription = scene.getSceneDescription();
+    //         ArrayList<Role> sceneRoles = scene.getRoles();
 
-        //     System.out.println(sceneName + " | " + sceneImg + " | " + budget);
-        //     System.out.println("#: " + sceneNumber);
-        //     System.out.println("Description: " + sceneDescription);
-        //     System.out.println("Roles:");
-        //     for (int j = 0; j < sceneRoles.size(); j++) {
-        //         System.out.println("  " + sceneRoles.get(j).getRoleName() + ": " + sceneRoles.get(j).getRoleLine());
-        //         System.out.println("  Area: x:" + sceneRoles.get(j).getArea()[0] + " y:" + sceneRoles.get(j).getArea()[1] + " h:" + sceneRoles.get(j).getArea()[2] + " w:" + sceneRoles.get(j).getArea()[3]);
-        //     }
+    //         System.out.println(sceneName + " | " + sceneImg + " | " + budget);
+    //         System.out.println("#: " + sceneNumber);
+    //         System.out.println("Description: " + sceneDescription);
+    //         System.out.println("Roles:");
+    //         for (int j = 0; j < sceneRoles.size(); j++) {
+    //             System.out.println("  " + sceneRoles.get(j).getRoleName() + ": " + sceneRoles.get(j).getRoleLine());
+    //             System.out.println("  Area: x:" + sceneRoles.get(j).getArea()[0] + " y:" + sceneRoles.get(j).getArea()[1] + " h:" + sceneRoles.get(j).getArea()[2] + " w:" + sceneRoles.get(j).getArea()[3]);
+    //         }
             
-        // }
-    }
+    //     }
+    // }
 }

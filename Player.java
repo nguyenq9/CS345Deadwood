@@ -3,30 +3,35 @@ public class Player {
     private int dollars;
     private int credits;
     private int rank;
-    private int pracChip;
-    private Role currRole;
-    private Location currLocation;
+    private int rehearsals;
+    private boolean isWorking;
+    private Role role;
+    private Set set;
+    private Location location;
 
     // Default number of players
-    public Player(String name) {
+    public Player(String name, Location startingLocation) {
         this.name = name;
         this.dollars = 0;
         this.credits = 0;
         this.rank = 1;
-        this.pracChip = 0;
-        // this.currRole = null;
-        // this.currLocation = trailer;
+        this.rehearsals = 0;
+        this.isWorking = false;
+        this.role = null;
+        this.set = null;
+        this.location = startingLocation;
     }
 
-    public Player(String name, int credits, int rank) {
+    public Player(String name, int credits, int rank, Location startingLocation) {
         this.name = name;
         this.dollars = 0;
-        this.credits= credits;
+        this.credits = credits;
         this.rank = rank;
-        this.pracChip = 0;
-        this.currRole = null;
-        // Trailer trailer = new Trailer();
-        // this.currLocation = trailer;
+        this.rehearsals = 0;
+        this.isWorking = false;
+        this.role = null;
+        this.set = null;
+        this.location = startingLocation;
     }
 
     public String getName(){        
@@ -45,16 +50,24 @@ public class Player {
         return rank;
     }
 
-    public int getPracChip() {
-        return pracChip;
+    public int getRehearsals() {
+        return rehearsals;
     }
 
-    public Role getCurrRole() {
-        return currRole;
+    public Role getRole() {
+        return role;
     }
 
-    public Location getCurrLocation() {
-        return currLocation;
+    public Set getSet() {
+        return set;
+    }
+
+    public boolean getIsWorking() {
+        return isWorking;
+    }
+
+    public Location getLocation() {
+        return location;
     }
 
     public void setName(String newName) {
@@ -73,14 +86,27 @@ public class Player {
         this.rank = newRank;
     }
 
-    public void setPracChip(int newPracChip) {
-        this.pracChip = newPracChip;
-    }
-    public void setCurrRole(Role newRole) {
-        this.currRole = newRole;
+    public void setRehearsals(int rehearsals) {
+        this.rehearsals = rehearsals;
     }
 
-    public void setCurrLocation(Location newLocation) {
-        this.currLocation = newLocation;
+    public void incrementRehearsals() {
+        rehearsals++;
+    }
+
+    public void setRole(Role newRole) {
+        this.role = newRole;
+    }
+
+    public void setSet(Set set) {
+        this.set = set;
+    }
+
+    public void setLocation(Location newLocation) {
+        this.location = newLocation;
+    }
+
+    public void setIsWorking(boolean isWorking) {
+        this.isWorking = isWorking;
     }
 }
