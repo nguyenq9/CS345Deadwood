@@ -168,6 +168,10 @@ public class GameView {
         System.out.println("You cannot take a role while you're working.");
     }
 
+    public void displayCantTakeAndWork() {
+        System.out.println("You cannot take a role and act on it on the same turn.")
+    }
+
     public void displayCantActWhileNotWorking() {
         System.out.println("You cannot act unless you're working, take a role first.");
     }

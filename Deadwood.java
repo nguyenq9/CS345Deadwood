@@ -56,6 +56,7 @@ public class Deadwood {
                 ActionType action;
                 gameView.displayTurn(player.getPlayerName());
                 boolean hasMoved = false;
+                boolean hasTaken = false;
                 boolean hasWorked = false;
                 do {
                     boolean isWorking = player.getPlayerIsWorking();
@@ -78,7 +79,7 @@ public class Deadwood {
                             if (isWorking) {
                                 gameView.displayCantTakeRoleWhileWorking();
                             } else {
-                                player.take();
+                                hasTaken = player.take();
                             }
                             break;
                         case ACT:
@@ -86,6 +87,8 @@ public class Deadwood {
                                 gameView.displayAlreadyWorked();
                             } else if (!isWorking) {
                                 gameView.displayCantActWhileNotWorking();
+                            } else if (hasTaken) {
+                                gameView.displayCantTakeAndWork();
                             } else {
                                 hasWorked = player.act();
                             }
