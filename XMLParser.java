@@ -43,7 +43,7 @@ public class XMLParser {
         return adjacentLocations;
     }
 
-    private static ArrayList<Role> parseSetRoles(Node set) throws Exception {
+    private static ArrayList<Role> parseRoles(Node set, boolean onCard) throws Exception {
         ArrayList<Role> roles = new ArrayList<Role>();
         NodeList parts = set.getChildNodes();
         for (int i = 0; i < parts.getLength(); i++) {
@@ -69,7 +69,7 @@ public class XMLParser {
                             break;
                     }
                 }
-                Role role = new Role(roleLevel, false, roleName, roleLine, roleArea);
+                Role role = new Role(roleLevel, onCard, roleName, roleLine, roleArea);
                 roles.add(role);
             }
         }
@@ -114,6 +114,56 @@ public class XMLParser {
         return count;
     }
 
+    private static int[] parseUpgradeDollarCosts(NodeList attributes) throws Exception {
+        int[] upgradeCosts = new int[5];
+        for (int i = 0; i < attributes.getLength(); i++) {
+            Node attribute = attributes.item(i);
+            String attributeName = attribute.getNodeName();
+            if (attributeName.equals("upgrades")) {
+                NodeList upgrades = attributes.item(i).getChildNodes();
+                for (int j = 0; j < upgrades.getLength(); j++) {
+                    Node upgrade = upgrades.item(j);
+                    String upgradeName = upgrade.getNodeName();
+                    if (upgradeName.equals("upgrade")) {
+                        String currency = upgrade.getAttributes().getNamedItem("currency").getNodeValue();
+                        if (currency.equals("dollar")) {
+                            int rank = Integer.parseInt(upgrade.getAttributes().getNamedItem("level").getNodeValue());
+                            int amount = Integer.parseInt(upgrade.getAttributes().getNamedItem("amt").getNodeValue());
+                            upgradeCosts[rank - 2] = amount;
+                        }
+                    }
+                }
+                break;
+            }
+        }
+        return upgradeCosts;
+    }
+
+    private static int[] parseUpgradeCreditCosts(NodeList attributes) throws Exception {
+        int[] upgradeCosts = new int[5];
+        for (int i = 0; i < attributes.getLength(); i++) {
+            Node attribute = attributes.item(i);
+            String attributeName = attribute.getNodeName();
+            if (attributeName.equals("upgrades")) {
+                NodeList upgrades = attributes.item(i).getChildNodes();
+                for (int j = 0; j < upgrades.getLength(); j++) {
+                    Node upgrade = upgrades.item(j);
+                    String upgradeName = upgrade.getNodeName();
+                    if (upgradeName.equals("upgrade")) {
+                        String currency = upgrade.getAttributes().getNamedItem("currency").getNodeValue();
+                        if (currency.equals("credit")) {
+                            int rank = Integer.parseInt(upgrade.getAttributes().getNamedItem("level").getNodeValue());
+                            int amount = Integer.parseInt(upgrade.getAttributes().getNamedItem("amt").getNodeValue());
+                            upgradeCosts[rank - 2] = amount;
+                        }
+                    }
+                }
+                break;
+            }
+        }
+        return upgradeCosts;
+    }
+
     private static Trailer parseTrailer(Node location, ArrayList<Location> locations) throws Exception {
         NodeList attributes = location.getChildNodes();
         ArrayList<Location> adjacentLocations = getNeighbors(attributes, locations);
@@ -125,7 +175,9 @@ public class XMLParser {
         NodeList attributes = location.getChildNodes();
         ArrayList<Location> adjacentLocations = getNeighbors(attributes, locations);
         int[] area = getArea(attributes);
-        return new CastingOffice(adjacentLocations, area);
+        int[] upgradeDollarCosts = parseUpgradeDollarCosts(attributes);
+        int[] upgradeCreditCosts = parseUpgradeCreditCosts(attributes);
+        return new CastingOffice(adjacentLocations, area, upgradeDollarCosts, upgradeCreditCosts);
     }
 
     public static Board parseBoard() throws Exception {
@@ -164,7 +216,7 @@ public class XMLParser {
                         break;
                     }
                     case "parts": {
-                        setRoles = parseSetRoles(attribute);
+                        setRoles = parseRoles(attribute, false);
                         break;
                     }
                 }
@@ -214,7 +266,7 @@ public class XMLParser {
             String cardName = card.getAttributes().getNamedItem("name").getNodeValue();
             String cardImg = card.getAttributes().getNamedItem("img").getNodeValue();
             int budget = Integer.parseInt(card.getAttributes().getNamedItem("budget").getNodeValue());
-            ArrayList<Role> cardRoles = parseSetRoles(card);
+            ArrayList<Role> cardRoles = parseRoles(card, true);
             int cardNumber;
             String cardDescription;
 

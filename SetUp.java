@@ -10,6 +10,7 @@ public class SetUp {
             return boardController;
         } catch (Exception e) {
             System.out.println("ERROR: Failed to parse board");
+            e.printStackTrace();
             // Add code for if the XML Parser throws an error
             return null;
         }
@@ -22,6 +23,7 @@ public class SetUp {
             return cardScenes;
         } catch (Exception e) {
             System.out.println("ERROR: Failed to parse scenes");
+            e.printStackTrace();
             // Add code for if the XML Parser throws an error
             return null;
         }
@@ -34,11 +36,11 @@ public class SetUp {
         }
     }
 
-    public static ArrayList<PlayerController> initializePlayers(int numPlayers, ArrayList<String> playerNames, Trailer trailer) {
+    public static ArrayList<PlayerController> initializePlayers(int numPlayers, ArrayList<String> playerNames, BoardController board) {
         ArrayList<PlayerController> players = new ArrayList<PlayerController>();
         for (int i = 0; i < numPlayers; i++) {
-            Player newPlayer = new Player(playerNames.get(i), trailer);
-            PlayerController newPlayerController = new PlayerController(newPlayer, GameView.gameView);
+            Player newPlayer = new Player(playerNames.get(i), board.getBoardTrailer());
+            PlayerController newPlayerController = new PlayerController(newPlayer, GameView.gameView, board);
             players.add(newPlayerController);
         }
         if (numPlayers == 7 || numPlayers == 8) {

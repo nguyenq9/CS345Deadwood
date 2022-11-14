@@ -2,8 +2,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Bank {
-    private static int[] upgradeDollarCosts;
-    private static int[] upgradeCreditCosts;
 
     public static void payActingRewards(PlayerController player, boolean onCard, boolean success) {
         if (onCard && success) {
@@ -39,37 +37,18 @@ public class Bank {
         }
 
         for (int i = 0; i < numRoles; i++) {
-            if (roles.get(i).getTaken()) {
-                PlayerController currentPlayer = roles.get(i).getActor();
-                int newDollars =
-                    currentPlayer.getPlayerDollars() + totalBonuses[i];
-                currentPlayer.setPlayerDollars(newDollars);
+            if (roles.get(i).getIsTaken()) {
+                int newDollars = roles.get(i).getActor().getPlayerDollars() + totalBonuses[i];
+                roles.get(i).getActor().setPlayerDollars(newDollars);
             }
         }
 
         for (int i = 0; i < set.getRoles().size(); i++) {
-            if (set.getRoles().get(i).getTaken()) {
-                PlayerController currentPlayer = roles.get(i).getActor();
-                int newDollars = currentPlayer.getPlayerDollars() + 2;    
-                currentPlayer.setPlayerDollars(newDollars);
+            if (set.getRoles().get(i).getIsTaken()) {
+                int newDollars = set.getRoles().get(i).getActor().getPlayerDollars() + set.getRoles().get(i).getRank();
+                set.getRoles().get(i).getActor().setPlayerDollars(newDollars);
             }
         }
-    }
-
-    public static int[] getUpgradeDollarCosts() {
-        return upgradeDollarCosts;
-    }
-
-    public static int[] getUpgradeCreditCosts() {
-        return upgradeCreditCosts;
-    }
-
-    public static int getDollarUpgradeCost(int desiredRank) {
-        return upgradeDollarCosts[desiredRank - 2];
-    }
-
-    public static int getCreditUpgradeCost(int desiredRank) {
-        return upgradeCreditCosts[desiredRank - 2];
     }
 
 }

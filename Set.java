@@ -20,6 +20,32 @@ public class Set implements Location {
         this.locationArea = locationArea;
     }
 
+    public void wrapScene() {
+        Bank.payBonusRewards(this);
+        Deadwood.decrementActiveScenes();
+        for (int i = 0; i < roles.size(); i++) {
+            PlayerController player = roles.get(i).getActor();
+            if (player != null) {
+                roles.get(i).setActor(null);
+                player.setPlayerIsWorking(false);
+                player.setPlayerRole(null);
+                player.setPlayerSet(null);
+                player.setPlayerRehearsals(0);
+            }
+        }
+
+        for (int i = 0; i < scene.getRoles().size(); i++) {
+            PlayerController player = scene.getRoles().get(i).getActor();
+            if (player != null) {
+                scene.getRoles().get(i).setActor(null);
+                player.setPlayerIsWorking(false);
+                player.setPlayerRole(null);
+                player.setPlayerSet(null);
+                player.setPlayerRehearsals(0);
+            }
+        }
+    }
+
     public ArrayList<Location> getAdjacentLocations() {
         return adjLocations;
     }

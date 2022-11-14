@@ -11,5 +11,6 @@ public enum ActionType {
     END,
     WHERE,
     WHO,
-    DETAILS
+    DETAILS,
+    SCENE
 }

@@ -25,7 +25,7 @@ public class Role{
         return onCard;
     }
 
-    public boolean getTaken() {
+    public boolean getIsTaken() {
         return isTaken;
     }
 
