@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 
 public class ScoreCalculator {
+
     // returns list of players in case of a tie
     public static ArrayList<PlayerController> getWinners(ArrayList<PlayerController> players) {
         int maxScore = 0;

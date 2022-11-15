@@ -3,6 +3,7 @@ import java.util.ArrayList;
 public class Deadwood {  
     private static ArrayList<PlayerController> players;
     private static BoardController board;
+    private static SetUp setup = SetUp.setup;
     private static int maxDays;
     private static ArrayList<Scene> cardScenes;
     private static int activeScenes;
@@ -11,15 +12,15 @@ public class Deadwood {
 
     public static void main(String[] args) {
         boolean devmode = false;
-        board = SetUp.initializeBoard();
-        cardScenes = SetUp.initializeCards();
-        SetUp.assignScenes(board, cardScenes);
+        board = setup.initializeBoard();
+        cardScenes = setup.initializeCards();
+        setup.assignScenes(board, cardScenes);
 
         int playerCount = 0;
         if (args.length > 0) {
             playerCount = Integer.parseInt(args[0]);
         } else {
-            System.out.println("Please include the number of players, Eg. \"java Deadwood 4\"");
+            System.out.println("ERROR: Please include the number of players, Eg. \"java Deadwood 4\"");
             System.exit(1);
         }
         if (args.length > 1) {
@@ -28,10 +29,10 @@ public class Deadwood {
             }
         }
         
-        maxDays = SetUp.getMaxDays(playerCount);
+        maxDays = setup.getMaxDays(playerCount);
         ArrayList<String> playerNames = gameView.getPlayerNames(playerCount);
 
-        players = SetUp.initializePlayers(playerCount, playerNames, board);
+        players = setup.initializePlayers(playerCount, playerNames, board);
         if (devmode) {
             for(int i = 0; i < playerCount; i++) {
                 players.get(i).setPlayerDollars(1000);

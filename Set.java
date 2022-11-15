@@ -9,6 +9,7 @@ public class Set implements Location {
     private boolean isWrapped;
     private ArrayList<Location> adjLocations;   // Added adjLocation attribute
     private int[] locationArea;
+    private Bank bank = Bank.bank;
 
     public Set(String setName, ArrayList<Role> roles, int maxShotCounters, int[] locationArea) {
         this.setName = setName;
@@ -27,7 +28,7 @@ public class Set implements Location {
         ArrayList<Role> sceneRoles = getScene().getRoles();
         for (int i = 0; i < sceneRoles.size(); i++) {
             if (sceneRoles.get(i).getActor() != null) {
-                Bank.payBonusRewards(this);
+                bank.payBonusRewards(this);
                 break;
             }
         }

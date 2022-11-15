@@ -4,6 +4,7 @@ public class PlayerController {
     private Player player;
     private GameView playerView;
     private BoardController boardController;
+    private Bank bank = Bank.bank;
 
     public PlayerController(Player player, GameView playerView, BoardController boardController) {
         this.player = player;
@@ -159,7 +160,7 @@ public class PlayerController {
         boolean success = roll >= budget;
         playerView.displayActRoll(roll);
         playerView.displayActingOutcome(getPlayerRole().getRoleLine(), success);
-        Bank.payActingRewards(this, getPlayerRole().getOnCard(), success);
+        bank.payActingRewards(this, getPlayerRole().getOnCard(), success);
         if (success) {
             set.decrementShotCounters();
             if (set.getShotCounters() == 0) {

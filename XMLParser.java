@@ -7,7 +7,13 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 public class XMLParser {
 
-    private static ArrayList<Location> parseSetNeighbors(Node set, ArrayList<Location> locations) throws Exception {
+    public static XMLParser xmlParser = new XMLParser();
+
+    private XMLParser() {
+
+    }
+
+    private ArrayList<Location> parseSetNeighbors(Node set, ArrayList<Location> locations) throws Exception {
         ArrayList<Location> adjacentLocations = new ArrayList<Location>();
         NodeList neighbors = set.getChildNodes();
         for (int i = 0; i < neighbors.getLength(); i++) {
@@ -24,7 +30,7 @@ public class XMLParser {
         return adjacentLocations;
     }
 
-    private static ArrayList<Role> parseRoles(Node set, boolean onCard) throws Exception {
+    private ArrayList<Role> parseRoles(Node set, boolean onCard) throws Exception {
         ArrayList<Role> roles = new ArrayList<Role>();
         NodeList parts = set.getChildNodes();
         for (int i = 0; i < parts.getLength(); i++) {
@@ -57,7 +63,7 @@ public class XMLParser {
         return roles;
     }
 
-    private static ArrayList<Location> getNeighbors(NodeList attributes, ArrayList<Location> locations) throws Exception {
+    private ArrayList<Location> getNeighbors(NodeList attributes, ArrayList<Location> locations) throws Exception {
         ArrayList<Location> adjacentLocations = new ArrayList<Location>();
         for (int j = 0; j < attributes.getLength(); j++) {
             Node attribute = attributes.item(j);
@@ -69,7 +75,7 @@ public class XMLParser {
         return adjacentLocations;
     }
 
-    private static int[] getArea(NodeList attributes) throws Exception {
+    private int[] getArea(NodeList attributes) throws Exception {
         int[] area = new int[4];
         for (int j = 0; j < attributes.getLength(); j++) {
             Node attribute = attributes.item(j);
@@ -84,7 +90,7 @@ public class XMLParser {
         return area;
     }
 
-    private static int getChildCount(Node parent) {
+    private int getChildCount(Node parent) {
         int count = 0;
         NodeList children = parent.getChildNodes();
         for (int k = 0; k < children.getLength(); k++) {
@@ -95,7 +101,7 @@ public class XMLParser {
         return count;
     }
 
-    private static int[] parseUpgradeDollarCosts(NodeList attributes) throws Exception {
+    private int[] parseUpgradeDollarCosts(NodeList attributes) throws Exception {
         int[] upgradeCosts = new int[5];
         for (int i = 0; i < attributes.getLength(); i++) {
             Node attribute = attributes.item(i);
@@ -120,7 +126,7 @@ public class XMLParser {
         return upgradeCosts;
     }
 
-    private static int[] parseUpgradeCreditCosts(NodeList attributes) throws Exception {
+    private int[] parseUpgradeCreditCosts(NodeList attributes) throws Exception {
         int[] upgradeCosts = new int[5];
         for (int i = 0; i < attributes.getLength(); i++) {
             Node attribute = attributes.item(i);
@@ -145,14 +151,14 @@ public class XMLParser {
         return upgradeCosts;
     }
 
-    private static Trailer parseTrailer(Node location, ArrayList<Location> locations) throws Exception {
+    private Trailer parseTrailer(Node location, ArrayList<Location> locations) throws Exception {
         NodeList attributes = location.getChildNodes();
         ArrayList<Location> adjacentLocations = getNeighbors(attributes, locations);
         int[] area = getArea(attributes);
         return new Trailer(adjacentLocations, area);
     }
 
-    private static CastingOffice parseOffice(Node location, ArrayList<Location> locations) throws Exception {
+    private CastingOffice parseOffice(Node location, ArrayList<Location> locations) throws Exception {
         NodeList attributes = location.getChildNodes();
         ArrayList<Location> adjacentLocations = getNeighbors(attributes, locations);
         int[] area = getArea(attributes);
@@ -161,7 +167,7 @@ public class XMLParser {
         return new CastingOffice(adjacentLocations, area, upgradeDollarCosts, upgradeCreditCosts);
     }
 
-    public static Board parseBoard() throws Exception {
+    public Board parseBoard() throws Exception {
         ArrayList<Location> locations = new ArrayList<Location>();
         ArrayList<Set> sets = new ArrayList<Set>();
 
@@ -233,8 +239,7 @@ public class XMLParser {
         return board;
     }
 
-
-    public static ArrayList<Scene> parseCards() throws Exception{
+    public ArrayList<Scene> parseCards() throws Exception{
         ArrayList<Scene> cardScenes = new ArrayList<Scene>();
         DocumentBuilderFactory myDomFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder myBuilder = myDomFactory.newDocumentBuilder();

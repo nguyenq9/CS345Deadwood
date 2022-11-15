@@ -5,8 +5,14 @@ public class Bank {
 
     private static GameView gameView = GameView.gameView;
 
+    public static Bank bank = new Bank();
+
+    private Bank() {
+
+    }
+
     // pays the player after they act
-    public static void payActingRewards(PlayerController player, boolean onCard, boolean success) {
+    public void payActingRewards(PlayerController player, boolean onCard, boolean success) {
         if (onCard && success) {
             player.addPlayerCredits(2);
             gameView.displayCreditEarnings(player, 2);
@@ -21,7 +27,7 @@ public class Bank {
     }
 
     // calculates the bonuses and distributes them to the players
-    public static void payBonusRewards(Set set) {
+    public void payBonusRewards(Set set) {
         gameView.displayBonus();
         Scene scene = set.getScene();
         int budget = scene.getBudget();

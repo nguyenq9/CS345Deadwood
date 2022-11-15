@@ -26,6 +26,6 @@ public class BoardController {
     }
 
     public void updateBoardView() {
-        // Make a call to boardView to display the board
+        // Will be used once we have a GUI
     }
 }
