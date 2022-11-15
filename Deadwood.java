@@ -10,12 +10,6 @@ public class Deadwood {
     private static GameView gameView = GameView.gameView;
 
     public static void main(String[] args) {
-        // Make calls to Setup to initialize game components
-        // players = SetUp.initializePlayers(8);
-        // board = SetUp.initializeBoard();
-        // maxDays = SetUp.getMaxDays(8);
-
-        // Big loop to control turns
         boolean devmode = false;
         board = SetUp.initializeBoard();
         cardScenes = SetUp.initializeCards();
@@ -25,7 +19,8 @@ public class Deadwood {
         if (args.length > 0) {
             playerCount = Integer.parseInt(args[0]);
         } else {
-            playerCount = gameView.getPlayerCount();
+            System.out.println("Please include the number of players, Eg. \"java Deadwood 4\"");
+            System.exit(1);
         }
         if (args.length > 1) {
             if (args[1].equals("-devmode")) {
@@ -47,13 +42,13 @@ public class Deadwood {
         }
         int playerIndex = 0;
         
+        // main game loop
         for (int i = 0; i < maxDays; i++) {
             currDay = i+1;
             activeScenes = board.getBoardSets().size();
-            // game loop
-            // action keywords: move, take, act, rehearse, upgrade, end
-            // info keywords: where, who, where all, help
             gameView.displayCurrentDay(currDay);
+
+            // this loop iterates when a day ends
             while (activeScenes > 1) {
                 PlayerController player = players.get(playerIndex);
                 ActionType action;
@@ -61,6 +56,8 @@ public class Deadwood {
                 boolean hasMoved = false;
                 boolean hasTaken = false;
                 boolean hasWorked = false;
+
+                // controls the players inputs and makes sure they are taking a valid turn
                 do {
                     boolean isWorking = player.getPlayerIsWorking();
                     action = GameView.getPlayerInput();
@@ -126,9 +123,6 @@ public class Deadwood {
                             break;
                         case END:
                             break;
-                        case WRAP:
-                            activeScenes = 1;
-                            break;
                     }
                 } while (action != ActionType.END);
 
@@ -141,6 +135,7 @@ public class Deadwood {
             board.getBoardTrailer().resetPlayerLocations(players);
             gameView.displayEndDay(currDay);
         }
+        // display winners when the game is over
         gameView.displayWinners(players);
     }
 

@@ -119,7 +119,7 @@ public class PlayerController {
                 if (getPlayerCredits() >= creditCost) {
                     setPlayerRank(choiceRank);
                     setPlayerCredits(getPlayerCredits() - creditCost);
-                    playerView.displayUpgradeSuccess(choiceRank);
+                    playerView.displayUpgradeOutcome(choiceRank);
                     return true;
                 }
             } else if (currency.toLowerCase().equals("dollars")) {
@@ -127,7 +127,7 @@ public class PlayerController {
                 if (getPlayerDollars() >= dollarCost) {
                     setPlayerRank(choiceRank);
                     setPlayerDollars(getPlayerDollars() - dollarCost); 
-                    playerView.displayUpgradeSuccess(choiceRank);
+                    playerView.displayUpgradeOutcome(choiceRank);
                     return true;
                 }
             }
@@ -136,7 +136,7 @@ public class PlayerController {
         return false;
     }
 
-    // returns true if th eplayer successfully rehearses, or false if they don't
+    // returns true if the eplayer successfully rehearses, or false if they don't
     public boolean rehearse() {
         Set set = getPlayerSet();
         if (getPlayerRole() == null || set == null || set.getIsWrapped()) {

@@ -20,7 +20,7 @@ public class Set implements Location {
         this.locationArea = locationArea;
     }
 
-    // returns true if bonuses are being paid out
+    // wraps a scene and resets the players who had roles in the set
     public void wrapScene() {
         setIsWrapped(true);
 

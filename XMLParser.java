@@ -7,25 +7,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 public class XMLParser {
 
-    private static ArrayList<Location> parseBoardNeighbors(Node parent) throws Exception {
-        ArrayList<Location> neighbors = new ArrayList<Location>();
-        NodeList children = parent.getChildNodes();
-
-        for (int i = 0; i < children.getLength(); i++) {
-            Node c = children.item(i);
-            String nodeName = c.getNodeName();
-
-            switch(nodeName) {
-                case "neighbor": {
-                    String name = c.getAttributes().getNamedItem("name").getNodeValue();
-                    System.out.println("   " + name);
-                }
-            }
-        }
-
-        return neighbors;
-    }
-
     private static ArrayList<Location> parseSetNeighbors(Node set, ArrayList<Location> locations) throws Exception {
         ArrayList<Location> adjacentLocations = new ArrayList<Location>();
         NodeList neighbors = set.getChildNodes();
@@ -284,53 +265,4 @@ public class XMLParser {
          }
         return cardScenes;
     }
-
-    // public static void main(String[] args) throws Exception{
-    //     Board board = parseBoard();
-    //     ArrayList<Location> locations = board.getLocations();
-    //     System.out.println("Number of Locations: " + locations.size());
-    //     for (int i = 0; i < locations.size(); i++) {
-    //         Location location = locations.get(i);
-    //         String locationType = location.getLocationType();
-    //         switch (locationType) {
-    //             case "Set":
-    //                 Set set = (Set) location;
-    //                 System.out.println(set.getLocationName() + ": ");
-    //                 System.out.println("Area: x:" + set.getLocationArea()[0] + " y:" + set.getLocationArea()[1] + " h:" + set.getLocationArea()[2] + " w:" + set.getLocationArea()[3]);
-    //                 System.out.println(set.getMaxShotCounters() + " Shot Counters");
-    //                 System.out.println("Locations:");
-    //                 for (int j = 0; j < set.getAdjacentLocations().size(); j++) {
-    //                     System.out.println("  " + set.getAdjacentLocations().get(j).getLocationName());
-    //                 }
-    //                 System.out.println("Roles:");
-    //                 for (int j = 0; j < set.getRoles().size(); j++) {
-    //                     System.out.println("  " + set.getRoles().get(j).getRoleName() + ": " + set.getRoles().get(j).getRoleLine());
-    //                     System.out.println("  Area: x:" + set.getRoles().get(j).getArea()[0] + " y:" + set.getRoles().get(j).getArea()[1] + " h:" + set.getRoles().get(j).getArea()[2] + " w:" + set.getRoles().get(j).getArea()[3]);
-    //                 }
-    //         }
-    //         System.out.println("");
-    //     }
-
-    //     ArrayList<Scene> cardScenes = parseCards();
-    //     System.out.println("Number of Cards: " + cardScenes.size());
-    //     for (int i = 0; i < cardScenes.size(); i++) {
-    //         Scene scene = cardScenes.get(i);
-    //         int budget = scene.getBudget();
-    //         String sceneName = scene.getSceneName();
-    //         int sceneNumber = scene.getSceneNumber();
-    //         String sceneImg = scene.getSceneImg();
-    //         String sceneDescription = scene.getSceneDescription();
-    //         ArrayList<Role> sceneRoles = scene.getRoles();
-
-    //         System.out.println(sceneName + " | " + sceneImg + " | " + budget);
-    //         System.out.println("#: " + sceneNumber);
-    //         System.out.println("Description: " + sceneDescription);
-    //         System.out.println("Roles:");
-    //         for (int j = 0; j < sceneRoles.size(); j++) {
-    //             System.out.println("  " + sceneRoles.get(j).getRoleName() + ": " + sceneRoles.get(j).getRoleLine());
-    //             System.out.println("  Area: x:" + sceneRoles.get(j).getArea()[0] + " y:" + sceneRoles.get(j).getArea()[1] + " h:" + sceneRoles.get(j).getArea()[2] + " w:" + sceneRoles.get(j).getArea()[3]);
-    //         }
-            
-    //     }
-    // }
 }

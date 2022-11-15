@@ -40,7 +40,7 @@ public class GameView {
     }
     
     public void displayHelp() {
-        System.out.println("Possible commands: move, take, act, rehearse, upgrade, scene, set, end, where, who, details");
+        System.out.println("Possible commands: [move], [take], [act], [rehearse], [upgrade], [set], end, [where], [who], [details]");
     }
 
     public void displaySetInfo(String setName, BoardController board) {
@@ -117,7 +117,7 @@ public class GameView {
         System.out.println(playerName + " took the " + roleName + " role.");
     }
 
-    public void displayUpgradeSuccess(int rank) {
+    public void displayUpgradeOutcome(int rank) {
         System.out.println("Successfully upgraded to rank " + rank + ".");
     }
 
@@ -126,12 +126,12 @@ public class GameView {
         if (success) {
             System.out.println("Acting success!");
         } else {
-            System.out.println("Acting failed :(");
+            System.out.println("Acting failed.");
         }
     }
     
     public void displayActRoll(int roll) {
-        System.out.println("Rolled " + roll);
+        System.out.println("Rolled a " + roll);
     }
 
     public void displayRehearsingOutcome(String roleLine, String playerName) {
@@ -280,24 +280,22 @@ public class GameView {
                 return ActionType.END;
             case "who":
                 return ActionType.WHO;
-            case "set":
-                return ActionType.SCENE;
-            case "scene":
-                return ActionType.SCENE;
             case "current":
                 return ActionType.WHO;
             case "active":
                 return ActionType.WHO;
+            case "set":
+                return ActionType.SCENE;
+            case "scene":
+                return ActionType.SCENE;
             case "where":
                 return ActionType.WHERE;
-            case "whereall":
+            case "whoall":
                 return ActionType.DETAILS;
             case "details":
                 return ActionType.DETAILS;
             case "info":
                 return ActionType.DETAILS;
-            case "wrap":
-                return ActionType.WRAP;
             default:
                 return ActionType.HELP;
         }

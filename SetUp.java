@@ -3,6 +3,7 @@ import java.util.Collections;
 
 public class SetUp {
 
+    // constructs the board out of locations
     public static BoardController initializeBoard() {
         try {
             Board board = XMLParser.parseBoard();
@@ -15,6 +16,7 @@ public class SetUp {
         }
     }
 
+    // initializes the deck of scene cards and shuffles them
     public static ArrayList<Scene> initializeCards() {
         try {
             ArrayList<Scene> cardScenes = XMLParser.parseCards();
@@ -27,6 +29,7 @@ public class SetUp {
         }
     }
 
+    // gives a new scene to each set
     public static void assignScenes(BoardController board, ArrayList<Scene> scenes) {
         ArrayList<Set> sets = board.getBoardSets();
         for (int i = 0; i < sets.size(); i++) {
@@ -34,6 +37,7 @@ public class SetUp {
         }
     }
 
+    // sets up starting player stats based on number of players
     public static ArrayList<PlayerController> initializePlayers(int numPlayers, ArrayList<String> playerNames, BoardController board) {
         ArrayList<PlayerController> players = new ArrayList<PlayerController>();
         for (int i = 0; i < numPlayers; i++) {
@@ -51,6 +55,7 @@ public class SetUp {
         return players;
     }
 
+    // randomizes the player turn order
     private static ArrayList<PlayerController> assignTurnOrder(ArrayList<PlayerController> players) {
         Collections.shuffle(players);
         return players;

@@ -1,5 +1,5 @@
 // action keywords: move, take, act, rehearse, upgrade, end
-// info keywords: help, who, where, details
+// info keywords: help, who, where, details, set
 
 public enum ActionType {
     HELP,
@@ -12,6 +12,5 @@ public enum ActionType {
     WHERE,
     WHO,
     DETAILS,
-    SCENE,
-    WRAP
+    SCENE
 }
