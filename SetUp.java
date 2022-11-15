@@ -11,7 +11,6 @@ public class SetUp {
         } catch (Exception e) {
             System.out.println("ERROR: Failed to parse board");
             e.printStackTrace();
-            // Add code for if the XML Parser throws an error
             return null;
         }
     }
@@ -24,7 +23,6 @@ public class SetUp {
         } catch (Exception e) {
             System.out.println("ERROR: Failed to parse scenes");
             e.printStackTrace();
-            // Add code for if the XML Parser throws an error
             return null;
         }
     }
@@ -58,12 +56,14 @@ public class SetUp {
         return players;
     }
 
+    // only called if 7 or 8 players
     private static void assignStartingRank(ArrayList<PlayerController> players) {
         for (int i = 0; i < players.size(); i++) {
             players.get(i).setPlayerRank(2);
         }
     }
 
+    // only called if 5 or 6 players
     private static void assignStartingCredits(ArrayList<PlayerController> players) {
         int numPlayers = players.size();
         for (int i = 0; i < numPlayers; i++) {

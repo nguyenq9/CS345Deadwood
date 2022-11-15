@@ -6,6 +6,7 @@ public class Deadwood {
     private static int maxDays;
     private static ArrayList<Scene> cardScenes;
     private static int activeScenes;
+    private static int currDay;
     private static GameView gameView = GameView.gameView;
 
     public static void main(String[] args) {
@@ -40,17 +41,19 @@ public class Deadwood {
             for(int i = 0; i < playerCount; i++) {
                 players.get(i).setPlayerDollars(1000);
                 players.get(i).setPlayerCredits(1000);
+                players.get(i).setPlayerRank(6);
                 players.get(i).setPlayerLocation(board.getBoardOffice());
             }
         }
-
+        int playerIndex = 0;
+        
         for (int i = 0; i < maxDays; i++) {
+            currDay = i+1;
             activeScenes = board.getBoardSets().size();
             // game loop
             // action keywords: move, take, act, rehearse, upgrade, end
             // info keywords: where, who, where all, help
-
-            int playerIndex = 0;
+            gameView.displayCurrentDay(currDay);
             while (activeScenes > 1) {
                 PlayerController player = players.get(playerIndex);
                 ActionType action;
@@ -67,37 +70,41 @@ public class Deadwood {
                             break;
                         case MOVE:
                             if (hasMoved) {
-                                gameView.displayAlreadyMoved();
+                                gameView.displayErrorMessage(ErrorType.ALREADY_MOVED);
                             } else if (isWorking) {
-                                gameView.displayCantMoveWhileWorking();
+                                gameView.displayErrorMessage(ErrorType.MOVE_WHILE_WORKING);
                                 break;
+                            } else if (hasWorked) {
+                                gameView.displayErrorMessage(ErrorType.WORK_AND_MOVE);
                             } else {
                                 hasMoved = player.move();
                             }
                             break;
                         case TAKE:
                             if (isWorking) {
-                                gameView.displayCantTakeRoleWhileWorking();
+                                gameView.displayErrorMessage(ErrorType.TAKE_WHILE_WORKING);
                             } else {
                                 hasTaken = player.take();
                             }
                             break;
                         case ACT:
                             if (hasWorked) {
-                                gameView.displayAlreadyWorked();
+                                gameView.displayErrorMessage(ErrorType.ALREADY_WORKED);
                             } else if (!isWorking) {
-                                gameView.displayCantActWhileNotWorking();
+                                gameView.displayErrorMessage(ErrorType.ACT_WHILE_NOT_WORKING);
                             } else if (hasTaken) {
-                                gameView.displayCantTakeAndWork();
+                                gameView.displayErrorMessage(ErrorType.TAKE_AND_WORK);
                             } else {
                                 hasWorked = player.act();
                             }
                             break;
                         case REHEARSE:
                             if (hasWorked) {
-                                gameView.displayAlreadyWorked();
+                                gameView.displayErrorMessage(ErrorType.ALREADY_WORKED);
                             } else if (!isWorking) {
-                                gameView.displayCantRehearseWhileNotWorking();
+                                gameView.displayErrorMessage(ErrorType.REHEARSE_WHILE_NOT_WORKING);
+                            } else if (hasTaken) {
+                                gameView.displayErrorMessage(ErrorType.TAKE_AND_WORK);
                             } else {
                                 hasWorked = player.rehearse();
                             }
@@ -119,6 +126,9 @@ public class Deadwood {
                             break;
                         case END:
                             break;
+                        case WRAP:
+                            activeScenes = 1;
+                            break;
                     }
                 } while (action != ActionType.END);
 
@@ -128,7 +138,10 @@ public class Deadwood {
                     playerIndex = 0;
                 }
             }
+            board.getBoardTrailer().resetPlayerLocations(players);
+            gameView.displayEndDay(currDay);
         }
+        gameView.displayWinners(players);
     }
 
     public static void decrementActiveScenes() {

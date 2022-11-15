@@ -11,6 +11,8 @@ public class GameView {
 
     private static Scanner input = new Scanner(System.in);
 
+    // GENERAL INFO DISPLAY - - - - -
+
     private void displayDetails(PlayerController player) {
         int rank = player.getPlayerRank();
         int dollars = player.getPlayerDollars();
@@ -33,11 +35,12 @@ public class GameView {
     }
 
     public void displayTurn(String playerName) {
+        System.out.println("");
         System.out.println(playerName + "! It's your turn!");
     }
     
     public void displayHelp() {
-        System.out.println("Possible commands: move, take, act, rehearse, upgrade, end, where, who, details");
+        System.out.println("Possible commands: move, take, act, rehearse, upgrade, scene, set, end, where, who, details");
     }
 
     public void displaySetInfo(String setName, BoardController board) {
@@ -74,6 +77,8 @@ public class GameView {
         }
     }
 
+    // ACTION OPTIONS DISPLAY - - - - - 
+
     public void displayMoveOption(ArrayList<String> options) {
         for (int i = 0; i < options.size(); i++) {
             System.out.println(" - " + options.get(i));
@@ -90,20 +95,30 @@ public class GameView {
         }
     }
 
-    public void displayMovingOutcome(String playerName, String locationName) {
-        System.out.println(playerName + " moved to " + locationName + ".");
+    public void displayUpgradeOptions(PlayerController player, BoardController board) {
+        int rank = player.getPlayerRank();
+        CastingOffice office = board.getBoardOffice();
+        int dollars = 0, credits = 0;
+        System.out.printf("You are currently rank %d. Costs to upgrade: \n", rank);
+        for (int i = rank - 1; i < (office.getUpgradeDollarCosts().length); i++) {
+            dollars = office.getUpgradeDollarCosts()[i];
+            credits = office.getUpgradeCreditCosts()[i];
+            System.out.printf("Rank: %d, Dollar Cost: %d, Credit Cost: %d\n", i + 2, dollars, credits);
+        }
     }
 
-    public void displayMovingFail() {
-        System.out.println("Can't move. Make sure you spelled the name of the location correctly.");
+    // ACTION OUTCOMES DISPLAY - - - - -
+
+    public void displayMovingOutcome(String playerName, String locationName) {
+        System.out.println(playerName + " moved to " + locationName + ".");
     }
 
     public void displayTakeRoleOutcome(String playerName, String roleName) {
         System.out.println(playerName + " took the " + roleName + " role.");
     }
 
-    public void displayTakingRoleFail() {
-        System.out.println("Can't take the role. Make sure you spelled the name of the role correctly.");
+    public void displayUpgradeSuccess(int rank) {
+        System.out.println("Successfully upgraded to rank " + rank + ".");
     }
 
     public void displayActingOutcome(String roleLine, boolean success) {
@@ -119,70 +134,106 @@ public class GameView {
         System.out.println("Rolled " + roll);
     }
 
-    public void displayNotAtOffice() {
-        System.out.println("Can't upgrade when not in the casting office.");
-    }
-
-    public void displaySceneWrapped() {
-        System.out.println("Last take complete! Distributing bonuses.");
-    }
-
     public void displayRehearsingOutcome(String roleLine, String playerName) {
         System.out.println("\"" + roleLine + "\"");
         System.out.println(playerName + " gained a rehearsal token!");
     }
 
-    public void displayUpgradeOptions(PlayerController player, BoardController board) {
-        int rank = player.getPlayerRank();
-        CastingOffice office = board.getBoardOffice();
-        int dollars = 0, credits = 0;
-        System.out.printf("You are currently rank %d. Costs to upgrade: \n", rank);
-        for (int i = rank - 1; i < (office.getUpgradeDollarCosts().length); i++) {
-            dollars = office.getUpgradeDollarCosts()[i];
-            credits = office.getUpgradeCreditCosts()[i];
-            System.out.printf("Rank: %d, Dollar Cost: %d, Credit Cost: %d\n", i + 2, dollars, credits);
+    public void displaySceneWrapped() {
+        System.out.println("Last take complete!");
+    }
+
+    public void displayBonus() {
+        System.out.println("Distributing Bonuses.");
+    }
+
+    public void displayDollarEarnings(PlayerController player, int amount) {
+        if (amount == 1) {
+            System.out.println(player.getPlayerName() + " earned a dollar!");
+        } else {
+            System.out.println(player.getPlayerName() + " earned " + amount + " dollars!");
         }
     }
 
-    public void displayUpgradeFail() {
-        System.out.println("Failed to upgrade. Make sure to enter a valid rank and that you have sufficient funds.");
+    public void displayCreditEarnings(PlayerController player, int amount) {
+        if (amount == 1) {
+            System.out.println(player.getPlayerName() + " earned a credit!");
+        } else {
+            System.out.println(player.getPlayerName() + " earned " + amount + " credits!");
+        }
     }
 
-    public void displayUpgradeSuccess(int rank) {
-        System.out.println("Successfully upgraded to rank " + rank + ".");
+    public void displayWinners(ArrayList<PlayerController> players) {
+        ArrayList<PlayerController> winners = ScoreCalculator.getWinners(players);
+        System.out.println("All days have been completed and the game is finished.");
+        if (winners.size() > 1) {
+            System.out.println("The winners are: ");
+        } else {
+            System.out.println("The winner is: ");
+        }
+
+        for (int i = 0; i < winners.size(); i++) {
+            System.out.println(winners.get(i).getPlayerName());
+        }
     }
 
-    public void displayAlreadyMoved() {
-        System.out.println("You have already moved this turn. Wait until next turn to move again.");
+    public void displayCurrentDay(int currDay) {
+        System.out.println("===== Day " + currDay + " has started. =====");
     }
 
-    public void displayAlreadyWorked() {
-        System.out.println("You have already worked this turn. Wait until next turn to work again.");
+    public void displayEndDay(int currDay) {
+        System.out.println("===== Day " + currDay + " has ended. =====");
     }
 
-    public void displayCantMoveWhileWorking() {
-        System.out.println("You cannot move while you're working.");
+    // ERROR DISPLAY - - - - -
+
+    public void displayErrorMessage(ErrorType errorType) {
+        String errorMessage = "";
+        switch(errorType) {
+            case INVALID_LOCATION:
+                errorMessage = "Failed to move. Make sure you spelled the name of the location correctly.";
+                break;
+            case INVALID_ROLE:
+                errorMessage = "Failed to take a role. Make sure you spelled the name of the role correctly.";
+                break;
+            case INVALID_RANK:
+                errorMessage = "Failed to upgrade. Make sure to enter a valid rank and that you have sufficient funds.";
+                break;
+            case NOT_AT_OFFICE:
+                errorMessage = "You can't upgrade when not in the casting office.";
+                break;
+            case NO_ROLES:
+                errorMessage = "There are no available roles at this location. Try somewhere else.";
+                break;
+            case ALREADY_MOVED:
+                errorMessage = "You have already moved this turn. Wait until next turn to move again.";
+                break;
+            case ALREADY_WORKED:
+                errorMessage = "You have already worked this turn. Wait until next turn to work again.";
+                break;
+            case MOVE_WHILE_WORKING:
+                errorMessage = "You cannot move while you're working on a role.";
+                break;
+            case TAKE_WHILE_WORKING:
+                errorMessage = "You cannot take a role while you're working on a role.";
+                break;
+            case WORK_AND_MOVE:
+                errorMessage = "You cannot work and move on the same turn.";
+                break;
+            case TAKE_AND_WORK:
+                errorMessage = "You cannot take a role and work on it on the same turn.";
+                break;
+            case ACT_WHILE_NOT_WORKING:
+                errorMessage = "You cannot act on a role unless you're working on one, take a role first.";
+                break;
+            case REHEARSE_WHILE_NOT_WORKING:
+                errorMessage = "You cannot rehearse a role unless you're working on one, take a role first.";
+                break;
+        }
+        System.out.println("Error: " + errorMessage + " (This did not take up your turn.)");
     }
 
-    public void displayCantTakeRoleWhileWorking() {
-        System.out.println("You cannot take a role while you're working.");
-    }
-
-    public void displayCantTakeAndWork() {
-        System.out.println("You cannot take a role and act on it on the same turn.")
-    }
-
-    public void displayCantActWhileNotWorking() {
-        System.out.println("You cannot act unless you're working, take a role first.");
-    }
-
-    public void displayCantRehearseWhileNotWorking() {
-        System.out.println("You cannot rehearse unless you're working, take a role first.");
-    }
-
-    public void displayCantTakeRole() {
-        System.out.println("There are no roles to take here. Try another location.");
-    }
+    // USER PROMPT DISPLAY - - - - -
 
     public int getPlayerCount() {
         int playerCount = input.nextInt();
@@ -198,7 +249,7 @@ public class GameView {
     public ArrayList<String> getPlayerNames(int playerCount) {
         ArrayList<String> playerNames = new ArrayList<String>();
         for (int i = 0; i < playerCount; i++) {
-            System.out.println("Enter Player " + (i + 1) + " Name: ");
+            System.out.print("Enter Player " + (i + 1) + " Name: ");
             playerNames.add(input.nextLine());
         }
         return playerNames;
@@ -245,6 +296,8 @@ public class GameView {
                 return ActionType.DETAILS;
             case "info":
                 return ActionType.DETAILS;
+            case "wrap":
+                return ActionType.WRAP;
             default:
                 return ActionType.HELP;
         }
@@ -269,9 +322,14 @@ public class GameView {
     public int getUpgradeOption() {
         System.out.println("Which rank do you want to upgrade to?");
         System.out.print("> ");
-        int rank = input.nextInt();
-        input.nextLine();
-        return rank;
+        try {
+            String rankInput = input.nextLine();
+            int rank = Integer.parseInt(rankInput);
+            return rank;
+        } catch (Exception e) {
+            return 0;
+        }
+        
     }
 
     public String getUpgradeCurrency() {
@@ -280,5 +338,4 @@ public class GameView {
         String currency = input.nextLine();
         return currency;
     }
-
 }

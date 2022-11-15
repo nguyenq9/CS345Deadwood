@@ -11,7 +11,7 @@ public class PlayerController {
         this.boardController = boardController;
     }
 
-    /// returns true if the player successfully moves, or false if they don't
+    // returns true if the player successfully moves, or false if they don't
     public boolean move() {
         Location currLocation = getPlayerLocation();
         ArrayList<Location> adj = currLocation.getAdjacentLocations();
@@ -29,11 +29,11 @@ public class PlayerController {
                 return true;
             }
         }
-        playerView.displayMovingFail();
+        playerView.displayErrorMessage(ErrorType.INVALID_LOCATION);
         return false;
     }
 
-    /// returns true if the player successfully takes a role, or false if they don't
+    // returns true if the player successfully takes a role, or false if they don't
     public boolean take() {
         ArrayList<Set> boardSets = boardController.getBoardSets();
         Set currSet = null;
@@ -48,8 +48,8 @@ public class PlayerController {
             }
         }
 
-        if (currSet == null || currSet.isWrapped()) {
-            playerView.displayCantTakeRole();
+        if (currSet == null || currSet.getIsWrapped()) {
+            playerView.displayErrorMessage(ErrorType.NO_ROLES);
             return false;
         }
 
@@ -92,14 +92,14 @@ public class PlayerController {
             if (sceneRoles.get(i).getRoleName().toLowerCase().equals(input) && !sceneRoles.get(i).getIsTaken() && sceneRoles.get(i).getRank() <= getPlayerRank()) {
                 setPlayerSet(currSet);
                 setPlayerRole(sceneRoles.get(i));
-                boardController.getBoardSets().get(setIndex).getRoles().get(i).setActor(this);
+                boardController.getBoardSets().get(setIndex).getScene().getRoles().get(i).setActor(this);
                 setPlayerIsWorking(true);
                 boardController.getBoardSets().get(setIndex).getScene().getRoles().get(i).setIsTaken(true);
                 playerView.displayTakeRoleOutcome(getPlayerName(), sceneRoles.get(i).getRoleName());
                 return true;
             }
         }
-        playerView.displayTakingRoleFail();
+        playerView.displayErrorMessage(ErrorType.INVALID_ROLE);
         return false;
 
     }
@@ -107,7 +107,7 @@ public class PlayerController {
     // returns true if the player successfully upgrades, or false if they don't
     public boolean upgrade() {
         if (!getPlayerLocation().getLocationName().toLowerCase().equals("office")){
-            playerView.displayNotAtOffice();
+            playerView.displayErrorMessage(ErrorType.NOT_AT_OFFICE);
             return false;
         }
         playerView.displayUpgradeOptions(this, boardController);
@@ -132,14 +132,14 @@ public class PlayerController {
                 }
             }
         }
-        playerView.displayUpgradeFail();
+        playerView.displayErrorMessage(ErrorType.INVALID_RANK);
         return false;
     }
 
     // returns true if th eplayer successfully rehearses, or false if they don't
     public boolean rehearse() {
         Set set = getPlayerSet();
-        if (getPlayerRole() == null || set == null || set.isWrapped()) {
+        if (getPlayerRole() == null || set == null || set.getIsWrapped()) {
             return false;
         }
         if (getPlayerRehearsals() == set.getScene().getBudget()) {
@@ -157,9 +157,9 @@ public class PlayerController {
         int roll = Dice.roll() + getPlayerRehearsals();
         int budget = set.getScene().getBudget();
         boolean success = roll >= budget;
-        Bank.payActingRewards(this, getPlayerRole().getOnCard(), success);
         playerView.displayActRoll(roll);
         playerView.displayActingOutcome(getPlayerRole().getRoleLine(), success);
+        Bank.payActingRewards(this, getPlayerRole().getOnCard(), success);
         if (success) {
             set.decrementShotCounters();
             if (set.getShotCounters() == 0) {
@@ -214,8 +214,24 @@ public class PlayerController {
         player.setDollars(newDollars);
     }
 
+    public void addPlayerDollars(int amount) {
+        player.addDollars(amount);
+    }
+
+    public void deductPlayerDollars(int amount) {
+        player.deductDollars(amount);
+    }
+
     public void setPlayerCredits(int newCredits) {
         player.setCredits(newCredits);
+    }
+
+    public void addPlayerCredits(int amount) {
+        player.addCredits(amount);
+    }
+
+    public void deductPlayerCredits(int amount) {
+        player.deductCredits(amount);
     }
 
     public void setPlayerRank(int newRank) {

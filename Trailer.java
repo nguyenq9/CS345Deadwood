@@ -30,4 +30,10 @@ public class Trailer implements Location{
     public int[] getLocationArea() {
         return locationArea;
     }
+
+    public void resetPlayerLocations(ArrayList<PlayerController> players) {
+        for (int i = 0; i < players.size(); i++) {
+            players.get(i).setPlayerLocation(this);
+        }
+    }
 }

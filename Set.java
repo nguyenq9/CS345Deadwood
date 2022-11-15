@@ -6,7 +6,7 @@ public class Set implements Location {
     private ArrayList<Role> roles;
     private int maxShotCounters;
     private int shotCounters;
-    private boolean wrapped;
+    private boolean isWrapped;
     private ArrayList<Location> adjLocations;   // Added adjLocation attribute
     private int[] locationArea;
 
@@ -20,13 +20,22 @@ public class Set implements Location {
         this.locationArea = locationArea;
     }
 
+    // returns true if bonuses are being paid out
     public void wrapScene() {
-        Bank.payBonusRewards(this);
-        Deadwood.decrementActiveScenes();
-        for (int i = 0; i < roles.size(); i++) {
-            PlayerController player = roles.get(i).getActor();
+        setIsWrapped(true);
+
+        ArrayList<Role> sceneRoles = getScene().getRoles();
+        for (int i = 0; i < sceneRoles.size(); i++) {
+            if (sceneRoles.get(i).getActor() != null) {
+                Bank.payBonusRewards(this);
+                break;
+            }
+        }
+
+        for (int i = 0; i < getRoles().size(); i++) {
+            PlayerController player = getRoles().get(i).getActor();
             if (player != null) {
-                roles.get(i).setActor(null);
+                getRoles().get(i).setActor(null);
                 player.setPlayerIsWorking(false);
                 player.setPlayerRole(null);
                 player.setPlayerSet(null);
@@ -34,16 +43,18 @@ public class Set implements Location {
             }
         }
 
-        for (int i = 0; i < scene.getRoles().size(); i++) {
-            PlayerController player = scene.getRoles().get(i).getActor();
+        for (int i = 0; i < sceneRoles.size(); i++) {
+            PlayerController player = sceneRoles.get(i).getActor();
             if (player != null) {
-                scene.getRoles().get(i).setActor(null);
+                sceneRoles.get(i).setActor(null);
                 player.setPlayerIsWorking(false);
                 player.setPlayerRole(null);
                 player.setPlayerSet(null);
                 player.setPlayerRehearsals(0);
             }
         }
+        
+        Deadwood.decrementActiveScenes();
     }
 
     public ArrayList<Location> getAdjacentLocations() {
@@ -66,8 +77,8 @@ public class Set implements Location {
         return roles;
     }
 
-    public boolean isWrapped() {
-        return wrapped;
+    public boolean getIsWrapped() {
+        return isWrapped;
     }
 
     public int getMaxShotCounters() {
@@ -88,6 +99,10 @@ public class Set implements Location {
 
     public void setScene(Scene scene) {
         this.scene = scene;
+    }
+
+    public void setIsWrapped(boolean isWrapped) {
+        this.isWrapped = isWrapped;
     }
 
     public void resetShotCounters() {

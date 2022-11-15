@@ -78,8 +78,24 @@ public class Player {
         this.dollars = newDollars;
     }
 
+    public void addDollars(int amount) {
+        this.dollars += amount;
+    }
+
+    public void deductDollars(int amount) {
+        this.dollars -= amount;
+    }
+
     public void setCredits(int newCredits) {
         this.credits = newCredits;
+    }
+
+    public void addCredits(int amount) {
+        this.credits += amount;
+    }
+
+    public void deductCredits(int amount) {
+        this.credits -= amount;
     }
 
     public void setRank(int newRank) {
