@@ -37,7 +37,7 @@ public class Deadwood {
             for(int i = 0; i < playerCount; i++) {
                 players.get(i).setPlayerDollars(1000);
                 players.get(i).setPlayerCredits(1000);
-                players.get(i).setPlayerRank(6);
+                players.get(i).setPlayerRank(4);
                 players.get(i).setPlayerLocation(board.getBoardOffice());
             }
         }
@@ -114,13 +114,18 @@ public class Deadwood {
                             gameView.displaySetInfo(player.getPlayerLocation().getLocationName(), board);
                             break;
                         case WHERE:
-                            gameView.displayCurrentLocation(players.get(playerIndex));
+                            gameView.displayCurrentLocation(players.get(playerIndex).getPlayerLocation().getLocationName());
                             break;
                         case WHO:
-                            gameView.displayCurrentDetails(players.get(playerIndex));
+                            gameView.displayCurrentDetails(player.getPlayerName(), player.getPlayerRank(), player.getPlayerDollars(), player.getPlayerCredits(),
+                            player.getPlayerRehearsals(), player.getPlayerLocation().getLocationName(), player.getPlayerRole());
                             break;
                         case DETAILS:
-                            gameView.displayAllDetails(players);
+                            for (int j = 0; j < players.size(); j++) {
+                                PlayerController p = players.get(j);
+                                gameView.displayDetails(p.getPlayerName(), p.getPlayerRank(), p.getPlayerDollars(), p.getPlayerCredits(),
+                                    p.getPlayerRehearsals(), p.getPlayerLocation().getLocationName(), p.getPlayerRole());
+                            }
                             break;
                         case END:
                             break;
@@ -137,7 +142,8 @@ public class Deadwood {
             gameView.displayEndDay(currDay);
         }
         // display winners when the game is over
-        gameView.displayWinners(players);
+        ArrayList<String> winners = ScoreCalculator.getWinners(players);
+        gameView.displayWinners(winners);
     }
 
     public static void decrementActiveScenes() {

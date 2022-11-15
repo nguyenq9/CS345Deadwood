@@ -3,7 +3,7 @@ import java.util.ArrayList;
 public class ScoreCalculator {
 
     // returns list of players in case of a tie
-    public static ArrayList<PlayerController> getWinners(ArrayList<PlayerController> players) {
+    public static ArrayList<String> getWinners(ArrayList<PlayerController> players) {
         int maxScore = 0;
         for (int i = 0; i < players.size(); i++) {
             int playerScore = getScore(players.get(i));
@@ -12,11 +12,11 @@ public class ScoreCalculator {
             }
         }
 
-        ArrayList<PlayerController> winners = new ArrayList<PlayerController>();
+        ArrayList<String> winners = new ArrayList<String>();
         for (int i = 0; i < players.size(); i++) {
             int playerScore = getScore(players.get(i));
             if (playerScore == maxScore) {
-                winners.add(players.get(i));
+                winners.add(players.get(i).getPlayerName());
             }
         }
         return winners;

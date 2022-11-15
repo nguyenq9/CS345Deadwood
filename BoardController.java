@@ -2,7 +2,7 @@ import java.util.ArrayList;
 
 public class BoardController {
     private Board board;
-    private GameView gameView;
+    private GameView gameView; // Will be used once we have a GUI
 
     public BoardController(Board board, GameView gameView) {
         this.board = board;

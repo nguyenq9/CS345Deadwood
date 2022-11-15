@@ -111,12 +111,13 @@ public class PlayerController {
             playerView.displayErrorMessage(ErrorType.NOT_AT_OFFICE);
             return false;
         }
-        playerView.displayUpgradeOptions(this, boardController);
+        CastingOffice office = boardController.getBoardOffice();
+        playerView.displayUpgradeOptions(getPlayerRank(), office.getUpgradeDollarCosts(), office.getUpgradeCreditCosts());
         int choiceRank = playerView.getUpgradeOption();
         if (choiceRank <= 6 && choiceRank > this.getPlayerRank()) {
             String currency = playerView.getUpgradeCurrency();
             if (currency.toLowerCase().equals("credits")) {
-                int creditCost = boardController.getBoardOffice().getCreditUpgradeCost(choiceRank);
+                int creditCost = office.getCreditUpgradeCost(choiceRank);
                 if (getPlayerCredits() >= creditCost) {
                     setPlayerRank(choiceRank);
                     setPlayerCredits(getPlayerCredits() - creditCost);
@@ -124,7 +125,7 @@ public class PlayerController {
                     return true;
                 }
             } else if (currency.toLowerCase().equals("dollars")) {
-                int dollarCost = boardController.getBoardOffice().getDollarUpgradeCost(choiceRank);
+                int dollarCost = office.getDollarUpgradeCost(choiceRank);
                 if (getPlayerDollars() >= dollarCost) {
                     setPlayerRank(choiceRank);
                     setPlayerDollars(getPlayerDollars() - dollarCost); 

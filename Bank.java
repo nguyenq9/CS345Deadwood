@@ -15,15 +15,15 @@ public class Bank {
     public void payActingRewards(PlayerController player, boolean onCard, boolean success) {
         if (onCard && success) {
             player.addPlayerCredits(2);
-            gameView.displayCreditEarnings(player, 2);
+            gameView.displayCreditEarnings(player.getPlayerName(), 2);
         } else if (!onCard) {
             if (success) {
                 player.addPlayerCredits(1);
-                gameView.displayCreditEarnings(player, 1);
+                gameView.displayCreditEarnings(player.getPlayerName(), 1);
             }
             player.addPlayerDollars(1);
-            gameView.displayDollarEarnings(player, 1);
-        } 
+            gameView.displayDollarEarnings(player.getPlayerName(), 1);
+        }
     }
 
     // calculates the bonuses and distributes them to the players
@@ -50,7 +50,7 @@ public class Bank {
         for (int i = 0; i < numRoles; i++) {
             if (roles.get(i).getIsTaken()) {
                 roles.get(i).getActor().addPlayerDollars(totalBonuses[i]);
-                gameView.displayDollarEarnings(roles.get(i).getActor(), totalBonuses[i]);
+                gameView.displayDollarEarnings(roles.get(i).getActor().getPlayerName(), totalBonuses[i]);
             }
         }
 
@@ -58,7 +58,7 @@ public class Bank {
             if (set.getRoles().get(i).getIsTaken()) {
                 int rank = set.getRoles().get(i).getRank();
                 set.getRoles().get(i).getActor().addPlayerDollars(rank);
-                gameView.displayDollarEarnings(set.getRoles().get(i).getActor(), rank);
+                gameView.displayDollarEarnings(set.getRoles().get(i).getActor().getPlayerName(), rank);
             }
         }
     }

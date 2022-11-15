@@ -13,16 +13,9 @@ public class GameView {
 
     // GENERAL INFO DISPLAY - - - - -
 
-    private void displayDetails(PlayerController player) {
-        int rank = player.getPlayerRank();
-        int dollars = player.getPlayerDollars();
-        int credits = player.getPlayerCredits();
-        int pracChip = player.getPlayerRehearsals();
-        Location location = player.getPlayerLocation();
-        String playerLocation = location.getLocationName();
-        Role role = player.getPlayerRole();
-        System.out.printf("Their current rank is %d, they have %d dollars, %d credits, and %d rehearsals. They are currently located in %s.\n",
-            rank, dollars, credits, pracChip, playerLocation);
+    public void displayDetails(String name, int rank, int dollars, int credits, int rehearsals, String playerLocation, Role role) {
+        System.out.printf("%s's current rank is %d, they have %d dollars, %d credits, and %d rehearsals. They are currently located in %s.\n",
+            name, rank, dollars, credits, rehearsals, playerLocation);
         if (role != null) {
             String roleName = role.getRoleName();
             String roleLine = role.getRoleLine();
@@ -59,22 +52,13 @@ public class GameView {
         System.out.println("The budget is " + scene.getBudget() + " million");
     }
 
-    public void displayCurrentLocation(PlayerController player) {
-        Location location = player.getPlayerLocation();
-        System.out.println("The current player's location is " + location.getLocationName() + ".");
+    public void displayCurrentLocation(String locationName) {
+        System.out.println("The current player's location is " + locationName + ".");
     }
 
-    public void displayCurrentDetails(PlayerController player) {
-        System.out.println("The current player is " + player.getPlayerName() + ".");
-        displayDetails(player);
-    }
-
-    public void displayAllDetails(ArrayList<PlayerController> players) {
-        int numPlayers = players.size();
-        for (int i = 0; i < numPlayers; i++) {
-            System.out.print(players.get(i).getPlayerName() + "'s Details: ");
-            displayDetails(players.get(i));
-        }
+    public void displayCurrentDetails(String name, int rank, int dollars, int credits, int rehearsals, String playerLocation, Role role) {
+        System.out.println("The current player is " + name + ".");
+        displayDetails(name, rank, dollars, credits, rehearsals, playerLocation, role);
     }
 
     // ACTION OPTIONS DISPLAY - - - - - 
@@ -95,14 +79,12 @@ public class GameView {
         }
     }
 
-    public void displayUpgradeOptions(PlayerController player, BoardController board) {
-        int rank = player.getPlayerRank();
-        CastingOffice office = board.getBoardOffice();
+    public void displayUpgradeOptions(int playerRank, int[] dollarCosts, int[] creditCosts) {
         int dollars = 0, credits = 0;
-        System.out.printf("You are currently rank %d. Costs to upgrade: \n", rank);
-        for (int i = rank - 1; i < (office.getUpgradeDollarCosts().length); i++) {
-            dollars = office.getUpgradeDollarCosts()[i];
-            credits = office.getUpgradeCreditCosts()[i];
+        System.out.printf("You are currently rank %d. Costs to upgrade: \n", playerRank);
+        for (int i = playerRank - 1; i < dollarCosts.length; i++) {
+            dollars = dollarCosts[i];
+            credits = creditCosts[i];
             System.out.printf("Rank: %d, Dollar Cost: %d, Credit Cost: %d\n", i + 2, dollars, credits);
         }
     }
@@ -147,33 +129,33 @@ public class GameView {
         System.out.println("Distributing Bonuses.");
     }
 
-    public void displayDollarEarnings(PlayerController player, int amount) {
+    public void displayDollarEarnings(String playerName, int amount) {
         if (amount == 1) {
-            System.out.println(player.getPlayerName() + " earned a dollar!");
+            System.out.println(playerName + " earned a dollar!");
         } else {
-            System.out.println(player.getPlayerName() + " earned " + amount + " dollars!");
+            System.out.println(playerName + " earned " + amount + " dollars!");
         }
     }
 
-    public void displayCreditEarnings(PlayerController player, int amount) {
+    public void displayCreditEarnings(String playerName, int amount) {
         if (amount == 1) {
-            System.out.println(player.getPlayerName() + " earned a credit!");
+            System.out.println(playerName + " earned a credit!");
         } else {
-            System.out.println(player.getPlayerName() + " earned " + amount + " credits!");
+            System.out.println(playerName + " earned " + amount + " credits!");
         }
     }
 
-    public void displayWinners(ArrayList<PlayerController> players) {
-        ArrayList<PlayerController> winners = ScoreCalculator.getWinners(players);
+    public void displayWinners(ArrayList<String> winnerNames) {
+        
         System.out.println("All days have been completed and the game is finished.");
-        if (winners.size() > 1) {
+        if (winnerNames.size() > 1) {
             System.out.println("The winners are: ");
         } else {
             System.out.println("The winner is: ");
         }
 
-        for (int i = 0; i < winners.size(); i++) {
-            System.out.println(winners.get(i).getPlayerName());
+        for (int i = 0; i < winnerNames.size(); i++) {
+            System.out.println(winnerNames.get(i) + "!");
         }
     }
 
@@ -254,9 +236,6 @@ public class GameView {
         }
         return playerNames;
     }
-
-    // action keywords: move, take, act, rehearse, upgrade, end
-    // info keywords: help, who, where, details
 
     public static ActionType getPlayerInput() {
         System.out.print("> ");
