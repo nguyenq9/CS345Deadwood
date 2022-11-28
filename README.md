@@ -9,7 +9,7 @@ Logan Giddings
 Thai Nguyen
 
 ### Requirements
-1. Download JDK 19
+1. Download JDK 19.00
 
 ### Getting the code
 1. Download and open the zipped file or clone the repository Github to your local machine.
