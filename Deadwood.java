@@ -10,7 +10,7 @@ public class Deadwood {
     private static int currDay;
     private static GameView gameView = GameView.gameView;
 
-    public static void main(String[] args) {
+    public static void start(String[] args) {
         boolean devmode = false;
         board = setup.initializeBoard();
         cardScenes = setup.initializeCards();

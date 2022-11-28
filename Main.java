@@ -2,6 +2,8 @@ import java.io.FileInputStream;
 import java.util.ArrayList;
 
 import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -11,16 +13,23 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BackgroundImage;
 import javafx.scene.layout.BackgroundRepeat;
 import javafx.scene.layout.BackgroundSize;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 public class Main extends Application {
 
     private SetUp setup = SetUp.setup;
     private static double scale = 1;
+    private static String playerCount = "2";
     
     public static void main(String[] args) {
         if (args.length > 0) {
-            scale = Double.parseDouble(args[0]);
+            playerCount = args[0];
+        }
+        if (args.length > 1) {
+            scale = Double.parseDouble(args[1]);
         }
         launch(args);
     }
@@ -36,8 +45,9 @@ public class Main extends Application {
         mainStage.setTitle("Deadwood Test");
 
         AnchorPane root = new AnchorPane();
+        root.setBackground(new Background(new BackgroundFill(Color.BLACK, null, null)));
 
-        Image boardImage = new Image(new FileInputStream("images/Board.jpg"));
+        Image boardImage = new Image(new FileInputStream("resources/Board.jpg"));
         ImageView imageView = new ImageView(boardImage);
         imageView.setX(0);
         imageView.setY(0);
@@ -45,12 +55,12 @@ public class Main extends Application {
         imageView.setFitHeight(900 * scale);
         AnchorPane boardGroup = new AnchorPane(imageView);
 
-        Background cardBackground = backgroundFromImagePath("images/CardBack-small.jpg");
+        Background cardBackground = backgroundFromImagePath("resources/CardBack-small.jpg");
         Background transparentBackground = new Background(new BackgroundFill(null, null, null));
 
         Background diceBackgrounds[] = new Background[6];
         for (int i = 0; i < 6; i++) {
-            diceBackgrounds[i] = backgroundFromImagePath("images/dice/w" + (i + 1) + ".png");
+            diceBackgrounds[i] = backgroundFromImagePath("resources/dice/w" + (i + 1) + ".png");
         }
 
         ArrayList<Location> locations = board.getBoardLocations();
@@ -86,11 +96,33 @@ public class Main extends Application {
             boardGroup.getChildren().add(button);
         }
         
-        // root.setTopAnchor(boardGroup, 300 * scale);
+        root.setTopAnchor(boardGroup, 300 * scale);
         root.getChildren().add(boardGroup);
 
-        mainStage.setScene(new javafx.scene.Scene(root, imageView.getFitWidth(), imageView.getFitHeight()));
+        FileInputStream fontFile = new FileInputStream("resources/WEST.TTF");
+        Font deadwoodFont = Font.loadFont(fontFile, 100 * scale);
+
+        Text currentPlayerName = new Text("Test Name");
+        currentPlayerName.setFill(Color.WHITE);
+        currentPlayerName.setFont(deadwoodFont);
+        root.setTopAnchor(currentPlayerName, 10 * scale);
+        root.setLeftAnchor(currentPlayerName, 10 * scale);
+        root.getChildren().add(currentPlayerName);
+
+        Button nextTurnButton = new Button();
+        nextTurnButton.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent event) {
+                
+            }
+        });
+
+        mainStage.setScene(new javafx.scene.Scene(root, imageView.getFitWidth() + 400 * scale, imageView.getFitHeight() + 300 * scale));
 
         mainStage.show();
+        Deadwood.start(new String[] {playerCount});
+    }
+
+    public void updateText() {
+
     }
 }
