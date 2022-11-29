@@ -1,38 +1,46 @@
 import java.util.ArrayList;
 
-public class Deadwood {  
-    private static ArrayList<PlayerController> players;
-    private static BoardController board;
+public class Deadwood {
     private static SetUp setup = SetUp.setup;
-    private static int maxDays;
-    private static ArrayList<Scene> cardScenes;
-    private static int activeScenes;
-    private static int currDay;
     private static GameView gameView = GameView.gameView;
 
-    public static void start(String[] args) {
-        boolean devmode = false;
-        board = setup.initializeBoard();
-        cardScenes = setup.initializeCards();
-        setup.assignScenes(board, cardScenes);
+    private static ArrayList<PlayerController> players;
+    private static BoardController board;
+    private static ArrayList<Scene> cardScenes;
+    private static int maxDays;
+    private static int activeScenes;
+    private static int currDay;
+    private static int playerCount;
 
-        int playerCount = 0;
+    public static void main(String[] args) {
+
+        // Handle Arguments
+        playerCount = 2;
         if (args.length > 0) {
             playerCount = Integer.parseInt(args[0]);
         } else {
             System.out.println("ERROR: Please include the number of players, Eg. \"java Deadwood 4\"");
             System.exit(1);
         }
+        double scale = 1;
         if (args.length > 1) {
-            if (args[1].equals("-devmode")) {
+            scale = Double.parseDouble(args[1]);
+        }
+        boolean devmode = false;
+        if (args.length > 2) {
+            if (args[2].equals("-devmode")) {
                 devmode = true;
             }
         }
-        
+
+        // Setup Game
+        board = setup.initializeBoard();
+        cardScenes = setup.initializeCards();
+        setup.assignScenes(board, cardScenes);
         maxDays = setup.getMaxDays(playerCount);
         ArrayList<String> playerNames = gameView.getPlayerNames(playerCount);
-
         players = setup.initializePlayers(playerCount, playerNames, board);
+
         if (devmode) {
             for(int i = 0; i < playerCount; i++) {
                 players.get(i).setPlayerDollars(1000);
@@ -41,8 +49,11 @@ public class Deadwood {
                 players.get(i).setPlayerLocation(board.getBoardOffice());
             }
         }
-        int playerIndex = 0;
+
+        GUIView.launchApp(scale, board); // New GUI Implementation
+        System.exit(0); // Temporary
         
+        int playerIndex = 0;
         // main game loop
         for (int i = 0; i < maxDays; i++) {
             currDay = i+1;
@@ -148,5 +159,34 @@ public class Deadwood {
 
     public static void decrementActiveScenes() {
         activeScenes--;
+    }
+
+    public static void MoveButtonClicked() {
+        System.out.println("Move Button Clicked");
+        GUIView.updateText();
+    }
+
+    public static void TakeButtonClicked() {
+        System.out.println("Take Button Clicked");
+    }
+
+    public static void ActButtonClicked() {
+        System.out.println("Act Button Clicked");
+    }
+
+    public static void RehearseButtonClicked() {
+        System.out.println("Rehearse Button Clicked");
+    }
+
+    public static void UpgradeButtonClicked() {
+        System.out.println("Upgrade Button Clicked");
+    }
+
+    public static void LocationClicked(Location location) {
+        System.out.println("Location Clicked: " + location.getLocationName());
+    }
+
+    public static void RoleClicked(Role role) {
+        System.out.println("Role Clicked: " + role.getRoleName());
     }
 }
