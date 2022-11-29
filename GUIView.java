@@ -5,7 +5,6 @@ import java.util.HashMap;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -377,10 +376,17 @@ public class GUIView extends Application {
             PlayerController player = location.getPlayers().get(i);
             if (!player.getPlayerIsWorking()) {
                 ImageView playerNode = playerNodes.get(player.getPlayerName());
-                playerNode.setFitWidth(20);
-                playerNode.setFitHeight(20);
-                boardGroup.setLeftAnchor(playerNode, (2.5d + location.getLocationArea()[0] + standingPlayerCount * 25) * scale);
-                boardGroup.setTopAnchor(playerNode, (location.getLocationArea()[2] - 27.5d + location.getLocationArea()[1]) * scale);
+                if (!location.getLocationName().equals("trailer")) {
+                    playerNode.setFitWidth(20 * scale);
+                    playerNode.setFitHeight(20 * scale);
+                    boardGroup.setLeftAnchor(playerNode, (location.getLocationArea()[0] + 5 + standingPlayerCount * 25) * scale);
+                    boardGroup.setTopAnchor(playerNode, (location.getLocationArea()[2] - 25d + location.getLocationArea()[1]) * scale);
+                } else {
+                    playerNode.setFitWidth(50 * scale);
+                    playerNode.setFitHeight(50 * scale);
+                    playerNode.setX((location.getLocationArea()[0] + 15 + 60 * ((standingPlayerCount % 3))) * scale);
+                    playerNode.setY((location.getLocationArea()[1] + 15 + 60 * ((standingPlayerCount / 3))) * scale);
+                }
                 standingPlayerCount++;
             }
         }
