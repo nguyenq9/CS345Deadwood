@@ -107,10 +107,6 @@ public class PlayerController {
 
     // returns true if the player successfully upgrades, or false if they don't
     public boolean upgrade() {
-        if (!getPlayerLocation().getLocationName().toLowerCase().equals("office")){
-            playerView.displayErrorMessage(ErrorType.NOT_AT_OFFICE);
-            return false;
-        }
         CastingOffice office = boardController.getBoardOffice();
         playerView.displayUpgradeOptions(getPlayerRank(), office.getUpgradeDollarCosts(), office.getUpgradeCreditCosts());
         int choiceRank = playerView.getUpgradeOption();
@@ -261,7 +257,9 @@ public class PlayerController {
     }
 
     public void setPlayerLocation(Location newLocation) {
+        getPlayerLocation().removePlayer(this);
         player.setLocation(newLocation);
+        newLocation.addPlayer(this);
     }
 
 }

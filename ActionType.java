@@ -2,15 +2,18 @@
 // info keywords: help, who, where, details, set
 
 public enum ActionType {
-    HELP,
+    //HELP,
     MOVE,
     TAKE,
     ACT,
     REHEARSE,
     UPGRADE,
     END,
-    WHERE,
-    WHO,
-    DETAILS,
-    SCENE
+    ROLE,        // role clicked on
+    LOCATION,    // location clicked on
+    UPGRADING    // chose upgrade and now choosing new rank
+    //WHERE,
+    //WHO,
+    //DETAILS,
+    //SCENE
 }

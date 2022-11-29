@@ -167,6 +167,39 @@ public class XMLParser {
         return new CastingOffice(adjacentLocations, area, upgradeDollarCosts, upgradeCreditCosts);
     }
 
+    private int[][] parseShotCounterArea(Node shotCounter) throws Exception{
+        int[][] area = new int[3][4];
+    
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 4; j++) {
+                area[i][j] = 0;
+            }
+        }
+        int index = 0;
+
+        NodeList takes = shotCounter.getChildNodes();
+        for (int i = 0; i < takes.getLength(); i++) {
+            Node take = takes.item(i);
+            if (take.getNodeName() == "take") {
+                NodeList takeChildren = take.getChildNodes();
+                for (int j = 0; j < takeChildren.getLength(); j++) {
+                    Node takeChild = takeChildren.item(j);
+                    String childName = takeChild.getNodeName();
+                    switch (childName) {
+                        case "area":
+                            area[index][0] = Integer.parseInt(takeChild.getAttributes().getNamedItem("x").getNodeValue());
+                            area[index][1] = Integer.parseInt(takeChild.getAttributes().getNamedItem("y").getNodeValue());
+                            area[index][2] = Integer.parseInt(takeChild.getAttributes().getNamedItem("h").getNodeValue());
+                            area[index][3] = Integer.parseInt(takeChild.getAttributes().getNamedItem("w").getNodeValue());
+                            break;
+                    }
+                }
+                index++;
+            }
+        }
+        return area;
+    }
+
     public Board parseBoard() throws Exception {
         ArrayList<Location> locations = new ArrayList<Location>();
         ArrayList<Set> sets = new ArrayList<Set>();
@@ -185,6 +218,7 @@ public class XMLParser {
             ArrayList<Role> setRoles = new ArrayList<Role>();
             int setMaxShots = 0;
             int[] setArea = new int[4];
+            int[][] shotCounterArea = new int[3][4];
 
             for (int j = 0; j < attributes.getLength(); j++) {
                 Node attribute = attributes.item(j);
@@ -200,6 +234,7 @@ public class XMLParser {
                     }
                     case "takes": {
                         setMaxShots = getChildCount(attribute);
+                        shotCounterArea = parseShotCounterArea(attribute);
                         break;
                     }
                     case "parts": {
@@ -208,7 +243,7 @@ public class XMLParser {
                     }
                 }
             }
-            Set set = new Set(setName, setRoles, setMaxShots, setArea);
+            Set set = new Set(setName, setRoles, setMaxShots, setArea, shotCounterArea);
             sets.add(set);
             locations.add(set);
         }

@@ -8,10 +8,12 @@ public class Set implements Location {
     private int shotCounters;
     private boolean isWrapped;
     private ArrayList<Location> adjLocations;   // Added adjLocation attribute
+    private ArrayList<PlayerController> players;
     private int[] locationArea;
+    private int[][] shotCounterAreas;
     private Bank bank = Bank.bank;
 
-    public Set(String setName, ArrayList<Role> roles, int maxShotCounters, int[] locationArea) {
+    public Set(String setName, ArrayList<Role> roles, int maxShotCounters, int[] locationArea, int[][] shotCounterAreas) {
         this.setName = setName;
         this.scene = null;
         this.roles = roles;
@@ -19,6 +21,8 @@ public class Set implements Location {
         this.shotCounters = maxShotCounters;
         this.adjLocations = null;
         this.locationArea = locationArea;
+        this.shotCounterAreas = shotCounterAreas;
+        this.players = new ArrayList<PlayerController>();
     }
 
     // wraps a scene and resets the players who had roles in the set
@@ -94,6 +98,10 @@ public class Set implements Location {
         return locationArea;
     }
 
+    public int[][] getShotCounterAreas() {
+        return shotCounterAreas;
+    }
+
     public void setAdjacentLocations(ArrayList<Location> locations) {
         adjLocations = locations;
     }
@@ -112,6 +120,22 @@ public class Set implements Location {
 
 	public void decrementShotCounters() {
         shotCounters--;
+	}
+
+	public ArrayList<PlayerController> getPlayers() {
+		return players;
+	}
+
+	public void addPlayer(PlayerController player) {
+		players.add(player);
+	}
+
+	public void removePlayer(PlayerController player) {
+		players.remove(player);
+	}
+
+	public void clearPlayers() {
+		players.clear();
 	}
 
 }

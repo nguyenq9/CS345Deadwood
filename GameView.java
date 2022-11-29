@@ -241,10 +241,10 @@ public class GameView {
         System.out.print("> ");
         String action = input.nextLine().toLowerCase();
         switch(action) {
-            case "help":
-                return ActionType.HELP;
-            case "?":
-                return ActionType.HELP;
+            // case "help":
+            //     return ActionType.HELP;
+            // case "?":
+            //     return ActionType.HELP;
             case "move":
                 return ActionType.MOVE;
             case "take":
@@ -257,26 +257,26 @@ public class GameView {
                 return ActionType.UPGRADE;
             case "end":
                 return ActionType.END;
-            case "who":
-                return ActionType.WHO;
-            case "current":
-                return ActionType.WHO;
-            case "active":
-                return ActionType.WHO;
-            case "set":
-                return ActionType.SCENE;
-            case "scene":
-                return ActionType.SCENE;
-            case "where":
-                return ActionType.WHERE;
-            case "whoall":
-                return ActionType.DETAILS;
-            case "details":
-                return ActionType.DETAILS;
-            case "info":
-                return ActionType.DETAILS;
+            // case "who":
+            //     return ActionType.WHO;
+            // case "current":
+            //     return ActionType.WHO;
+            // case "active":
+            //     return ActionType.WHO;
+            // case "set":
+            //     return ActionType.SCENE;
+            // case "scene":
+            //     return ActionType.SCENE;
+            // case "where":
+            //     return ActionType.WHERE;
+            // case "whoall":
+            //     return ActionType.DETAILS;
+            // case "details":
+            //     return ActionType.DETAILS;
+            // case "info":
+            //     return ActionType.DETAILS;
             default:
-                return ActionType.HELP;
+                return ActionType.END;
         }
     }
 

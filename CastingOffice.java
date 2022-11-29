@@ -3,6 +3,7 @@ import java.util.ArrayList;
 public class CastingOffice implements Location {
     private ArrayList<Location> adjLocations;
     private int[] locationArea;
+    private ArrayList<PlayerController> players;
     
     private int[] upgradeDollarCosts;
     private int[] upgradeCreditCosts;
@@ -12,6 +13,7 @@ public class CastingOffice implements Location {
         this.locationArea = locationArea;
         this.upgradeDollarCosts = upgradeDollarCosts;
         this.upgradeCreditCosts = upgradeCreditCosts;
+        this.players = new ArrayList<PlayerController>();
     }
 
     public String getLocationName() {
@@ -49,4 +51,20 @@ public class CastingOffice implements Location {
     public int getCreditUpgradeCost(int desiredRank) {
         return upgradeCreditCosts[desiredRank - 2];
     }
+
+    public ArrayList<PlayerController> getPlayers() {
+		return players;
+	}
+
+	public void addPlayer(PlayerController player) {
+		players.add(player);
+	}
+
+	public void removePlayer(PlayerController player) {
+		players.remove(player);
+	}
+
+	public void clearPlayers() {
+		players.clear();
+	}
 }

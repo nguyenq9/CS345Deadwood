@@ -51,6 +51,7 @@ public class SetUp {
         for (int i = 0; i < numPlayers; i++) {
             Player newPlayer = new Player(playerNames.get(i), board.getBoardTrailer());
             PlayerController newPlayerController = new PlayerController(newPlayer, GameView.gameView, board);
+            board.getBoardTrailer().addPlayer(newPlayerController);
             players.add(newPlayerController);
         }
         if (numPlayers == 7 || numPlayers == 8) {
