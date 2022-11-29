@@ -40,9 +40,15 @@ public class Deadwood {
     public static void main(String[] args) {
 
         // Handle Arguments
-        double scale = 1;
+        double scale = 0.5;
         if (args.length > 0) {
             scale = Double.parseDouble(args[0]);
+            if (scale < 0.35) {
+                scale = 0.35;
+            }
+            if (scale > 3) {
+                scale = 3;
+            }
         }
         boolean devmode = false;
         if (args.length > 1) {
