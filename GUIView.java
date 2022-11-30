@@ -32,6 +32,7 @@ public class GUIView extends Application {
     private static HashMap<String, Button> locationNodes = new HashMap<String, Button>();
     private static HashMap<String, Button> roleNodes = new HashMap<String, Button>();
     private static HashMap<String, Button> buttonNodes = new HashMap<String, Button>();
+    private static HashMap<String, ArrayList<Button>> onCardRoleNodes = new HashMap<String, ArrayList<Button>>();
     private static Font[] deadwoodFonts = new Font[5];
     private static Image[][] diceImages = new Image[9][6];
     private static Image shotImage;
@@ -302,8 +303,9 @@ public class GUIView extends Application {
 
     private static void createPlayers() {
         String[] playerNames = {"Blue", "Cyan", "Green", "Orange", "Pink", "Red", "Violet", "Yellow", "White"};
+        int startingRank = playerCount > 6 ? 2 : 1;
         for (int j = 0; j < playerCount; j++) {
-            ImageView playerImage = new ImageView(diceImages[j][0]);
+            ImageView playerImage = new ImageView(diceImages[j][startingRank - 1]);
             playerImage.setFitWidth(50 * scale);
             playerImage.setFitHeight(50 * scale);
             playerImage.setX((board.getBoardTrailer().getLocationArea()[0] + 15 + 60 * ((j % 3))) * scale);
@@ -344,6 +346,7 @@ public class GUIView extends Application {
         try {
             locationButton.setBackground(backgroundFromImagePath("resources/cards/" + set.getScene().getSceneImg()));
             ArrayList<Role> roles = set.getScene().getRoles();
+            ArrayList<Button> cardRoleNodes = new ArrayList<Button>();
             for (int i = 0; i < roles.size(); i++) {
                 Role role = roles.get(i);
     
@@ -367,11 +370,22 @@ public class GUIView extends Application {
     
                 // Add the button to the board panel
                 roleNodes.put(role.getRoleName(), roleButton);
+                cardRoleNodes.add(roleButton);
                 boardGroup.getChildren().add(roleButton);
             }
+            onCardRoleNodes.put(set.getLocationName(), cardRoleNodes);
         } catch (Exception e) {
             System.out.println("Error loading card image");
             e.printStackTrace();
+        }
+    }
+
+    public static void removeSet(Set set) {
+        Button locationButton = locationNodes.get(set.getLocationName());
+        locationButton.setBackground(transparentBackground);
+        ArrayList<Button> cardRoleNodes = onCardRoleNodes.get(set.getLocationName());
+        for (int i = 0; i < cardRoleNodes.size(); i++) {
+            boardGroup.getChildren().remove(cardRoleNodes.get(i));
         }
     }
 
