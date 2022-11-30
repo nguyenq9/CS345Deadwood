@@ -2,6 +2,8 @@ import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import javax.swing.Action;
+
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -24,6 +26,7 @@ public class GUIView extends Application {
     private static Text dayNum;
     private static int playerCount;
     private static Stage stage;
+    private static AnchorPane root;
     private static AnchorPane boardGroup;
     private static HashMap<String, ImageView> playerNodes = new HashMap<String, ImageView>();
     private static HashMap<String, Button> locationNodes = new HashMap<String, Button>();
@@ -31,10 +34,17 @@ public class GUIView extends Application {
     private static HashMap<String, Button> buttonNodes = new HashMap<String, Button>();
     private static Font[] deadwoodFonts = new Font[5];
     private static Image[][] diceImages = new Image[9][6];
+    private static Image shotImage;
+    private static Background cardBackground;
+    private static Background transparentBackground;
 
     public static void launchApp(double screenScale, BoardController boardController) throws Exception {
         board = boardController;
         scale = screenScale;
+        // Load in card background image and create blank transparent background to use later
+        cardBackground = backgroundFromImagePath("resources/CardBack-small.jpg");
+        transparentBackground = new Background(new BackgroundFill(null, null, null));
+        shotImage = new Image(new FileInputStream("resources/shot.png"));
         for (int i = 0; i < 5; i++) {
             FileInputStream fontFile = new FileInputStream("resources/WEST.TTF");
             deadwoodFonts[i] = Font.loadFont(fontFile, (i + 1) * 20 * scale);
@@ -122,8 +132,10 @@ public class GUIView extends Application {
     }
 
     public void displayBoard() throws Exception {
+
         // Create a root node to display
-        AnchorPane root = new AnchorPane();
+        root = new AnchorPane();
+
         // Back the default background black instead of white (for the sake of my eyes)
         root.setBackground(new Background(new BackgroundFill(Color.BLACK, null, null)));
 
@@ -132,15 +144,85 @@ public class GUIView extends Application {
         ImageView imageView = new ImageView(boardImage);
         imageView.setFitWidth(1200 * scale);
         imageView.setFitHeight(900 * scale);
+
         // Create a panel with the board image as the base node
         boardGroup = new AnchorPane(imageView);
 
-        // Load in card background image and create blank transparent background to use later
-        Background cardBackground = backgroundFromImagePath("resources/CardBack-small.jpg");
-        Background transparentBackground = new Background(new BackgroundFill(null, null, null));
-
-        // For every location on the board, create a button for it on the panel
+        // Get locations, sets, and roles into lists
         ArrayList<Location> locations = board.getBoardLocations();
+        ArrayList<Set> sets = board.getBoardSets();
+        ArrayList<Role> roles = new ArrayList<Role>();
+        for (int i = 0; i < sets.size(); i++) {
+            Set set = sets.get(i);
+            roles.addAll(set.getRoles());
+        }
+        
+        // Create UI elements
+        createLocations(locations);
+        createShotCounters(sets);
+        createOffCardRoles(roles);
+        createPlayers();
+        
+        // Add the board panel to the root node
+        root.setBottomAnchor(boardGroup, 0d);
+        root.setRightAnchor(boardGroup, 0d);
+        root.getChildren().add(boardGroup);
+
+        // Create text elements
+        playerInfo = createText("", Color.WHITE, deadwoodFonts[2], 1200, 20);
+        dayNum = createText("", Color.WHITE, deadwoodFonts[4], 100, 50);
+
+        createButton("Move", 50, 325, new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent event) {
+                Deadwood.moveButtonClicked();
+            }
+        });
+
+        createButton("Take", 50, 475, new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent event) {
+                Deadwood.takeButtonClicked();
+            }
+        });
+
+        createButton("Act", 50, 625, new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent event) {
+                Deadwood.actButtonClicked();
+            }
+        });
+
+        createButton("Rehearse", 50, 775, new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent event) {
+                Deadwood.rehearseButtonClicked();
+            }
+        });
+
+        createButton("Upgrade", 50, 925, new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent event) {
+                Deadwood.upgradeButtonClicked();
+            }
+        });
+
+        createButton("End Turn", 50, 1075, new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent event) {
+                Deadwood.endTurnButtonClicked();
+            }
+        });
+        
+        // Set the application to display the root node
+        stage.setScene(new javafx.scene.Scene(root, imageView.getFitWidth() + 400 * scale, imageView.getFitHeight() + 300 * scale));
+    }
+
+    private static Text createText(String text, Color color, Font font, double posX, double posY) {
+        Text textNode = new Text(text);
+        textNode.setFill(color);
+        textNode.setFont(font);
+        root.setLeftAnchor(textNode, posX * scale);
+        root.setTopAnchor(textNode, posY * scale);
+        root.getChildren().add(textNode);
+        return textNode;
+    }
+
+    private static void createLocations(ArrayList<Location> locations) {
         for (int i = 0; i < locations.size(); i++) {
             Location location = locations.get(i);
 
@@ -172,15 +254,9 @@ public class GUIView extends Application {
             // Add the button to the board panel
             boardGroup.getChildren().add(locationButton);
         }
+    }
 
-        // Create list of off-card roles
-        ArrayList<Set> sets = board.getBoardSets();
-        ArrayList<Role> roles = new ArrayList<Role>();
-        for (int i = 0; i < sets.size(); i++) {
-            Set set = sets.get(i);
-            roles.addAll(set.getRoles());
-        }
-        
+    private static void createOffCardRoles(ArrayList<Role> roles) throws Exception {
         // For every role on the board, create a button for it on the panel
         for (int i = 0; i < roles.size(); i++) {
             Role role = roles.get(i);
@@ -207,12 +283,14 @@ public class GUIView extends Application {
             roleNodes.put(role.getRoleName(), roleButton);            // Add the button to the board panel
             boardGroup.getChildren().add(roleButton);
         }
+    }
 
+    private static void createShotCounters(ArrayList<Set> sets) throws Exception {
         for (int i = 0; i < sets.size(); i++) {
             Set set = sets.get(i);
             for (int j = 0; j < set.getMaxShotCounters(); j++) {
                 int[] shotCounterArea = set.getShotCounterAreas()[j];
-                ImageView shotCounter = new ImageView(new Image(new FileInputStream("resources/shot.png")));
+                ImageView shotCounter = new ImageView(shotImage);
                 shotCounter.setX(shotCounterArea[0] * scale);
                 shotCounter.setY(shotCounterArea[1] * scale);
                 shotCounter.setFitHeight(shotCounterArea[2] * scale);
@@ -220,7 +298,9 @@ public class GUIView extends Application {
                 boardGroup.getChildren().add(shotCounter);
             }
         }
+    }
 
+    private static void createPlayers() {
         String[] playerNames = {"Blue", "Cyan", "Green", "Orange", "Pink", "Red", "Violet", "Yellow", "White"};
         for (int j = 0; j < playerCount; j++) {
             ImageView playerImage = new ImageView(diceImages[j][0]);
@@ -231,139 +311,21 @@ public class GUIView extends Application {
             playerNodes.put(playerNames[j], playerImage);
             boardGroup.getChildren().add(playerImage);
         }
-        
-        // Add the board panel to the root node
-        root.setBottomAnchor(boardGroup, 0d);
-        root.setRightAnchor(boardGroup, 0d);
-        root.getChildren().add(boardGroup);
+    }
 
-        // Create a text element and add it to the root node [Temporary Testing]
-        playerInfo = new Text();
-        playerInfo.setFill(Color.WHITE);
-        playerInfo.setFont(deadwoodFonts[2]);
-        root.setTopAnchor(playerInfo, 30 * scale);
-        root.setRightAnchor(playerInfo, 50 * scale);
-        root.getChildren().add(playerInfo);
-
-        dayNum = new Text();
-        dayNum.setFill(Color.WHITE);
-        dayNum.setFont(deadwoodFonts[4]);
-        root.setTopAnchor(dayNum, 50 * scale);
-        root.setLeftAnchor(dayNum, 50 * scale);
-        root.getChildren().add(dayNum);
-
-        // C// Create action buttons
-        Button moveButton = new Button();
-        buttonNodes.put("moveButton", moveButton);
-        Button actButton = new Button();
-        buttonNodes.put("actButton", actButton);
-        Button rehearseButton = new Button();
-        buttonNodes.put("rehearseButton", rehearseButton);
-        Button upgradeButton = new Button();
-        buttonNodes.put("upgradeButton", upgradeButton);
-        Button takeButton = new Button();
-        buttonNodes.put("takeButton", takeButton);
-        Button endTurnButton = new Button();
-        buttonNodes.put("endTurnButton", endTurnButton);        // Set the button to call Deadwood.MoveButtonClicked when Clicked
-        moveButton.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent event) {
-                Deadwood.moveButtonClicked();
-            }
-        });
-
+    private static void createButton(String buttonName, double xPos, double yPos, EventHandler<ActionEvent> event) {
+        Button button = new Button();
+        buttonNodes.put(buttonName, button);
         // Set the text, size, and coordinates of the button to their appropriate values
-        moveButton.setText("Move");
-        moveButton.setFont(deadwoodFonts[2]);
-        moveButton.setPrefHeight(100 * scale);
-        moveButton.setPrefWidth(300 * scale);
-        boardGroup.setLeftAnchor(moveButton, 50 * scale);
-        boardGroup.setTopAnchor(moveButton, 325 * scale);
-
+        button.setText(buttonName);
+        button.setFont(deadwoodFonts[2]);
+        button.setPrefHeight(100 * scale);
+        button.setPrefWidth(300 * scale);
+        boardGroup.setLeftAnchor(button, xPos * scale);
+        boardGroup.setTopAnchor(button, yPos * scale);
         // Set the button to call Deadwood.MoveButtonClicked when Clicked
-        takeButton.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent event) {
-                Deadwood.takeButtonClicked();
-            }
-        });
-
-        // Set the text, size, and coordinates of the button to their appropriate values
-        takeButton.setText("Take");
-        takeButton.setFont(deadwoodFonts[2]);
-        takeButton.setPrefHeight(100 * scale);
-        takeButton.setPrefWidth(300 * scale);
-        boardGroup.setLeftAnchor(takeButton, 50 * scale);
-        boardGroup.setTopAnchor(takeButton, 475 * scale);
-
-        // Set the button to call Deadwood.MoveButtonClicked when Clicked
-        actButton.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent event) {
-                Deadwood.actButtonClicked();
-            }
-        });
-
-        // Set the text, size, and coordinates of the button to their appropriate values
-        actButton.setText("Act");
-        actButton.setFont(deadwoodFonts[2]);
-        actButton.setPrefHeight(100 * scale);
-        actButton.setPrefWidth(300 * scale);
-        boardGroup.setLeftAnchor(actButton, 50 * scale);
-        boardGroup.setTopAnchor(actButton, 625 * scale);
-        
-        // Set the button to call Deadwood.MoveButtonClicked when Clicked
-        rehearseButton.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent event) {
-                Deadwood.rehearseButtonClicked();
-            }
-        });
-
-        // Set the text, size, and coordinates of the button to their appropriate values
-        rehearseButton.setText("Rehearse");
-        rehearseButton.setFont(deadwoodFonts[2]);
-        rehearseButton.setPrefHeight(100 * scale);
-        rehearseButton.setPrefWidth(300 * scale);
-        boardGroup.setLeftAnchor(rehearseButton, 50 * scale);
-        boardGroup.setTopAnchor(rehearseButton, 775 * scale);
-
-        // Set the button to call Deadwood.MoveButtonClicked when Clicked
-        upgradeButton.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent event) {
-                Deadwood.upgradeButtonClicked();
-            }
-        });
-
-        // Set the text, size, and coordinates of the button to their appropriate values
-        upgradeButton.setText("Upgrade");
-        upgradeButton.setFont(deadwoodFonts[2]);
-        upgradeButton.setPrefHeight(100 * scale);
-        upgradeButton.setPrefWidth(300 * scale);
-        boardGroup.setLeftAnchor(upgradeButton, 50 * scale);
-        boardGroup.setTopAnchor(upgradeButton, 925 * scale);
-
-        // Set the button to call Deadwood.MoveButtonClicked when Clicked
-        endTurnButton.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent event) {
-                Deadwood.endTurnButtonClicked();
-            }
-        });
-
-        // Set the text, size, and coordinates of the button to their appropriate values
-        endTurnButton.setText("End Turn");
-        endTurnButton.setFont(deadwoodFonts[2]);
-        endTurnButton.setPrefHeight(100 * scale);
-        endTurnButton.setPrefWidth(300 * scale);
-        boardGroup.setLeftAnchor(endTurnButton, 50 * scale);
-        boardGroup.setTopAnchor(endTurnButton, 1075 * scale);
-
-        // Add buttons to the root node
-        root.getChildren().add(moveButton);
-        root.getChildren().add(takeButton);
-        root.getChildren().add(actButton);
-        root.getChildren().add(rehearseButton);
-        root.getChildren().add(upgradeButton);
-        root.getChildren().add(endTurnButton);
-        
-        // Set the application to display the root node
-        stage.setScene(new javafx.scene.Scene(root, imageView.getFitWidth() + 400 * scale, imageView.getFitHeight() + 300 * scale));
+        button.setOnAction(event);
+        root.getChildren().add(button);
     }
 
     public static void displayPlayerInfo(String name, int rank, int dollars, int credits, int rehearsals) {
@@ -375,6 +337,42 @@ public class GUIView extends Application {
     public static void displayCurrentDay(int currDay) {
         String info = "Day " + currDay;
         dayNum.setText(info);
+    }
+
+    public static void revealSet(Set set) {
+        Button locationButton = locationNodes.get(set.getLocationName());
+        try {
+            locationButton.setBackground(backgroundFromImagePath("resources/cards/" + set.getScene().getSceneImg()));
+            ArrayList<Role> roles = set.getScene().getRoles();
+            for (int i = 0; i < roles.size(); i++) {
+                Role role = roles.get(i);
+    
+                // Create a new button
+                Button roleButton = new Button();
+                // Set the button to call Deadwood.RoleClicked when clicked, passing in the associated Role
+                roleButton.setOnAction(new EventHandler<ActionEvent>() {
+                    public void handle(ActionEvent event) {
+                        Deadwood.roleClicked(role);
+                    }
+                });
+    
+                // Set the background of the button to the appropriate dice image
+                roleButton.setBackground(backgroundFromImage(diceImages[8][role.getRank() - 1]));
+    
+                // Set the size and coordinates of the button to their appropriate values
+                roleButton.setPrefHeight(role.getArea()[2] * scale);
+                roleButton.setPrefWidth(role.getArea()[3] * scale);
+                boardGroup.setLeftAnchor(roleButton, locationButton.getLayoutX() + (role.getArea()[0]) * scale);
+                boardGroup.setTopAnchor(roleButton, locationButton.getLayoutY() + (role.getArea()[1]) * scale);
+    
+                // Add the button to the board panel
+                roleNodes.put(role.getRoleName(), roleButton);
+                boardGroup.getChildren().add(roleButton);
+            }
+        } catch (Exception e) {
+            System.out.println("Error loading card image");
+            e.printStackTrace();
+        }
     }
 
     public static void highlightLocations(ArrayList<Location> locations) {
@@ -438,11 +436,17 @@ public class GUIView extends Application {
         }
     }
 
-    public static void movePlayerToRole(String playerName, String roleName) {
+    public static void movePlayerToRole(String playerName, String roleName, boolean onCard) {
         ImageView playerNode = playerNodes.get(playerName);
+        playerNode.toFront();
         Button roleNode = roleNodes.get(roleName);
-        playerNode.setFitWidth(50 * scale);
-        playerNode.setFitHeight(50 * scale);
+        if (onCard) {
+            playerNode.setFitWidth(40 * scale);
+            playerNode.setFitHeight(40 * scale);
+        } else {
+            playerNode.setFitWidth(46 * scale);
+            playerNode.setFitHeight(46 * scale);
+        }
         boardGroup.setLeftAnchor(playerNode, (roleNode.getLayoutX()));
         boardGroup.setTopAnchor(playerNode, (roleNode.getLayoutY()));
     }

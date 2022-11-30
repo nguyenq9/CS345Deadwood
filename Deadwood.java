@@ -204,7 +204,7 @@ public class Deadwood {
                 player.setPlayerRole(role);
                 player.setPlayerIsWorking(true);
                 GUIView.movePlayerToRole(player.getPlayerName(),
-                    player.getPlayerRole().getRoleName());
+                    role.getRoleName(), role.getOnCard());
                 GUIView.clearHighlightRoles(roles);
             }
             role.setIsTaken(true);
@@ -257,7 +257,11 @@ public class Deadwood {
                 GUIView.updatePlayerLocation(prevLocation);
                 GUIView.updatePlayerLocation(location);
                 currSet = getSet(location);
-                if (location instanceof Set) {
+                if (currSet != null) {
+                    if (!currSet.getScene().getVisible()) {
+                        currSet.getScene().setVisible(true);
+                        GUIView.revealSet(currSet);
+                    }
                     inSet = true;
                 }
                 hasMoved = true;
