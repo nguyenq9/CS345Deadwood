@@ -8,13 +8,9 @@ import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.BackgroundImage;
-import javafx.scene.layout.BackgroundRepeat;
-import javafx.scene.layout.BackgroundSize;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
@@ -24,7 +20,8 @@ public class GUIView extends Application {
     
     private static BoardController board;
     private static double scale;
-    private static Text testText;
+    private static Text playerInfo;
+    private static Text dayNum;
     private static int playerCount;
     private static Stage stage;
     private static AnchorPane boardGroup;
@@ -63,7 +60,6 @@ public class GUIView extends Application {
     public void setPlayerCount(String numPlayers) throws Exception {
         playerCount = Integer.parseInt(numPlayers);
         Deadwood.initializePlayers(playerCount);
-        displayBoard();
     }
 
     @Override
@@ -71,7 +67,7 @@ public class GUIView extends Application {
         stage = mainStage;
         // Set the title of the window
         mainStage.setTitle("Deadwood Test");
-        mainStage.setResizable(false);
+        stage.setResizable(false);
         mainStage.getIcons().add(new Image(new FileInputStream("resources/shot.png")));
 
         // Create a root node to display
@@ -89,6 +85,8 @@ public class GUIView extends Application {
                 public void handle(ActionEvent event) {
                     try {
                         setPlayerCount(button.getId());
+                        displayBoard();
+                        Deadwood.initialDisplay();
                     } catch (Exception e) {
                         System.out.println("Error running application");
                         e.printStackTrace();
@@ -159,18 +157,6 @@ public class GUIView extends Application {
             // Set the background of the button to the card back or to transparency for the office and trailer
             if (!location.getLocationName().equals("office") && !location.getLocationName().equals("trailer")) {
                 locationButton.setBackground(cardBackground);
-            } else if (location.getLocationName().equals("trailer")) {
-                locationButton.setBackground(transparentBackground);
-                String[] playerNames = {"Blue", "Cyan", "Green", "Orange", "Pink", "Red", "Violet", "Yellow", "White"};
-                for (int j = 0; j < playerCount; j++) {
-                    ImageView playerImage = new ImageView(diceImages[j][0]);
-                    playerImage.setFitWidth(50 * scale);
-                    playerImage.setFitHeight(50 * scale);
-                    playerImage.setX((location.getLocationArea()[0] + 15 + 60 * ((j % 3))) * scale);
-                    playerImage.setY((location.getLocationArea()[1] + 15 + 60 * ((j / 3))) * scale);
-                    playerNodes.put(playerNames[j], playerImage);
-                    boardGroup.getChildren().add(playerImage);
-                }
             } else {
                 locationButton.setBackground(transparentBackground);
             }
@@ -234,6 +220,17 @@ public class GUIView extends Application {
                 boardGroup.getChildren().add(shotCounter);
             }
         }
+
+        String[] playerNames = {"Blue", "Cyan", "Green", "Orange", "Pink", "Red", "Violet", "Yellow", "White"};
+        for (int j = 0; j < playerCount; j++) {
+            ImageView playerImage = new ImageView(diceImages[j][0]);
+            playerImage.setFitWidth(50 * scale);
+            playerImage.setFitHeight(50 * scale);
+            playerImage.setX((board.getBoardTrailer().getLocationArea()[0] + 15 + 60 * ((j % 3))) * scale);
+            playerImage.setY((board.getBoardTrailer().getLocationArea()[1] + 15 + 60 * ((j / 3))) * scale);
+            playerNodes.put(playerNames[j], playerImage);
+            boardGroup.getChildren().add(playerImage);
+        }
         
         // Add the board panel to the root node
         root.setBottomAnchor(boardGroup, 0d);
@@ -241,12 +238,19 @@ public class GUIView extends Application {
         root.getChildren().add(boardGroup);
 
         // Create a text element and add it to the root node [Temporary Testing]
-        testText = new Text("Number of Players: " + playerCount);
-        testText.setFill(Color.WHITE);
-        testText.setFont(deadwoodFonts[4]);
-        root.setTopAnchor(testText, 50 * scale);
-        root.setLeftAnchor(testText, 50 * scale);
-        root.getChildren().add(testText);
+        playerInfo = new Text();
+        playerInfo.setFill(Color.WHITE);
+        playerInfo.setFont(deadwoodFonts[2]);
+        root.setTopAnchor(playerInfo, 30 * scale);
+        root.setRightAnchor(playerInfo, 50 * scale);
+        root.getChildren().add(playerInfo);
+
+        dayNum = new Text();
+        dayNum.setFill(Color.WHITE);
+        dayNum.setFont(deadwoodFonts[4]);
+        root.setTopAnchor(dayNum, 50 * scale);
+        root.setLeftAnchor(dayNum, 50 * scale);
+        root.getChildren().add(dayNum);
 
         // C// Create action buttons
         Button moveButton = new Button();
@@ -363,11 +367,48 @@ public class GUIView extends Application {
     }
 
     public static void displayPlayerInfo(String name, int rank, int dollars, int credits, int rehearsals) {
-        testText.setText(name);
+        String info = "Player: " + name + "\nRank: " + rank + "\nDollars: "
+                        + dollars + "\nCredits: " + credits + "\nRehearsals: " + rehearsals;
+        playerInfo.setText(info);
+    }
+
+    public static void displayCurrentDay(int currDay) {
+        String info = "Day " + currDay;
+        dayNum.setText(info);
     }
 
     public static void highlightLocations(ArrayList<Location> locations) {
-        
+        for (int i = 0; i < locations.size(); i++) {
+            Button locationButton = locationNodes.get(locations.get(i).getLocationName());
+            locationButton.setBorder(new Border(new BorderStroke(Color.HOTPINK, new BorderStrokeStyle(StrokeType.OUTSIDE, null, null, 10, 0, null), null, new BorderWidths(5))));
+        }
+    }
+
+    public static void clearHightlightLocations(ArrayList<Location> locations) {
+        for (int i = 0; i < locations.size(); i++) {
+            Button locationButton = locationNodes.get(locations.get(i).getLocationName());
+            locationButton.setBorder(Border.EMPTY);
+        }
+    }
+
+    public static void highlightRoles(ArrayList<Role> roles) {
+        for (int i = 0; i < roles.size(); i++) {
+            Button roleButton = roleNodes.get(roles.get(i).getRoleName());
+            if (roleButton == null) {
+                continue;
+            }
+            roleButton.setBorder(new Border(new BorderStroke(Color.HOTPINK, new BorderStrokeStyle(StrokeType.OUTSIDE, null, null, 10, 0, null), new CornerRadii(5), new BorderWidths(5))));
+        }
+    }
+
+    public static void clearHighlightRoles(ArrayList<Role> roles) {
+        for (int i = 0; i < roles.size(); i++) {
+            Button roleButton = roleNodes.get(roles.get(i).getRoleName());
+            if (roleButton == null) {
+                continue;
+            }
+            roleButton.setBorder(Border.EMPTY);
+        }
     }
     
     public static void updatePlayerLocation(Location location) {
@@ -376,19 +417,33 @@ public class GUIView extends Application {
             PlayerController player = location.getPlayers().get(i);
             if (!player.getPlayerIsWorking()) {
                 ImageView playerNode = playerNodes.get(player.getPlayerName());
-                if (!location.getLocationName().equals("trailer")) {
+                if (location.getLocationName().equals("trailer")) {
+                    playerNode.setFitWidth(50 * scale);
+                    playerNode.setFitHeight(50 * scale);
+                    boardGroup.setLeftAnchor(playerNode, (location.getLocationArea()[0] + 15 + 60 * ((standingPlayerCount % 3))) * scale);
+                    boardGroup.setTopAnchor(playerNode, (location.getLocationArea()[1] + 15 + 60 * ((standingPlayerCount / 3))) * scale);
+                } else if (location.getLocationName().equals("office")){
+                    playerNode.setFitWidth(20 * scale);
+                    playerNode.setFitHeight(20 * scale);
+                    boardGroup.setLeftAnchor(playerNode, (location.getLocationArea()[0] + 5) * scale);
+                    boardGroup.setTopAnchor(playerNode, (location.getLocationArea()[1] + location.getLocationArea()[2] - 25d - standingPlayerCount * 25) * scale);
+                } else {
                     playerNode.setFitWidth(20 * scale);
                     playerNode.setFitHeight(20 * scale);
                     boardGroup.setLeftAnchor(playerNode, (location.getLocationArea()[0] + 5 + standingPlayerCount * 25) * scale);
-                    boardGroup.setTopAnchor(playerNode, (location.getLocationArea()[2] - 25d + location.getLocationArea()[1]) * scale);
-                } else {
-                    playerNode.setFitWidth(50 * scale);
-                    playerNode.setFitHeight(50 * scale);
-                    playerNode.setX((location.getLocationArea()[0] + 15 + 60 * ((standingPlayerCount % 3))) * scale);
-                    playerNode.setY((location.getLocationArea()[1] + 15 + 60 * ((standingPlayerCount / 3))) * scale);
+                    boardGroup.setTopAnchor(playerNode, (location.getLocationArea()[1] + location.getLocationArea()[2] - 25d) * scale);
                 }
                 standingPlayerCount++;
             }
         }
+    }
+
+    public static void movePlayerToRole(String playerName, String roleName) {
+        ImageView playerNode = playerNodes.get(playerName);
+        Button roleNode = roleNodes.get(roleName);
+        playerNode.setFitWidth(50 * scale);
+        playerNode.setFitHeight(50 * scale);
+        boardGroup.setLeftAnchor(playerNode, (roleNode.getLayoutX()));
+        boardGroup.setTopAnchor(playerNode, (roleNode.getLayoutY()));
     }
 }

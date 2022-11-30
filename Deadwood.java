@@ -6,6 +6,7 @@ public class Deadwood {
 
     private static ArrayList<PlayerController> players;
     private static PlayerController player;
+    private static Set currSet;
     private static BoardController board;
     private static ArrayList<Scene> cardScenes;
     private static int maxDays;
@@ -18,6 +19,8 @@ public class Deadwood {
     private static boolean isWorking;
     private static boolean inOffice;
     private static boolean isTaking;
+    private static boolean inSet;
+    private static boolean isWrapped;
     private static boolean isMoving;
     private static boolean isUpgrading;
     private static int playerIndex = 0;
@@ -35,10 +38,16 @@ public class Deadwood {
         playerNames.add("Yellow");
         players = setup.initializePlayers(playerCount, playerNames, board);
         player = players.get(playerIndex);
+        resetBools();
+    }
+
+    public static void initialDisplay() { 
+        GUIView.displayPlayerInfo(player.getPlayerName(), player.getPlayerRank(),
+            player.getPlayerDollars(), player.getPlayerCredits(), player.getPlayerRehearsals());
+        GUIView.displayCurrentDay(currDay);    
     }
 
     public static void main(String[] args) {
-
         // Handle Arguments
         double scale = 0.5;
         if (args.length > 0) {
@@ -50,19 +59,14 @@ public class Deadwood {
                 scale = 3;
             }
         }
-        boolean devmode = false;
-        if (args.length > 1) {
-            if (args[1].equals("-devmode")) {
-                devmode = true;
-            }
-        }
 
         // Setup Game
         board = setup.initializeBoard();
         cardScenes = setup.initializeCards();
         setup.assignScenes(board, cardScenes);
         maxDays = setup.getMaxDays(playerCount);
-        // ArrayList<String> playerNames = gameView.getPlayerNames(playerCount);
+        currDay = 1;
+        activeScenes = 10;
         
         try {
             GUIView.launchApp(scale, board); // New GUI Implementation
@@ -72,113 +76,6 @@ public class Deadwood {
         }
         
         System.exit(0); // Temporary
-        
-        // int playerIndex = 0;
-        // // main game loop
-        // for (int i = 0; i < maxDays; i++) {
-        //     currDay = i+1;
-        //     activeScenes = board.getBoardSets().size();
-        //     gameView.displayCurrentDay(currDay);
-
-        //     // this loop iterates when a day ends
-        //     while (activeScenes > 1) {
-        //         PlayerController player = players.get(playerIndex);
-        //         ActionType action;
-        //         gameView.displayTurn(player.getPlayerName());
-        //         boolean hasMoved = false;
-        //         boolean hasTaken = false;
-        //         boolean hasWorked = false;
-
-        //         // controls the players inputs and makes sure they are taking a valid turn
-        //         do {
-        //             boolean isWorking = player.getPlayerIsWorking();
-        //             action = GameView.getPlayerInput();
-        //             switch (action) {
-        //                 case HELP:
-        //                     gameView.displayHelp();
-        //                     break;
-        //                 case MOVE:
-        //                     if (hasMoved) {
-        //                         gameView.displayErrorMessage(ErrorType.ALREADY_MOVED);
-        //                     } else if (isWorking) {
-        //                         gameView.displayErrorMessage(ErrorType.MOVE_WHILE_WORKING);
-        //                         break;
-        //                     } else if (hasWorked) {
-        //                         gameView.displayErrorMessage(ErrorType.WORK_AND_MOVE);
-        //                     } else {
-        //                         hasMoved = player.move();
-        //                     }
-        //                     break;
-        //                 case TAKE:
-        //                     if (isWorking) {
-        //                         gameView.displayErrorMessage(ErrorType.TAKE_WHILE_WORKING);
-        //                     } else {
-        //                         hasTaken = player.take();
-        //                     }
-        //                     break;
-        //                 case ACT:
-        //                     if (hasWorked) {
-        //                         gameView.displayErrorMessage(ErrorType.ALREADY_WORKED);
-        //                     } else if (!isWorking) {
-        //                         gameView.displayErrorMessage(ErrorType.ACT_WHILE_NOT_WORKING);
-        //                     } else if (hasTaken) {
-        //                         gameView.displayErrorMessage(ErrorType.TAKE_AND_WORK);
-        //                     } else {
-        //                         hasWorked = player.act();
-        //                     }
-        //                     break;
-        //                 case REHEARSE:
-        //                     if (hasWorked) {
-        //                         gameView.displayErrorMessage(ErrorType.ALREADY_WORKED);
-        //                     } else if (!isWorking) {
-        //                         gameView.displayErrorMessage(ErrorType.REHEARSE_WHILE_NOT_WORKING);
-        //                     } else if (hasTaken) {
-        //                         gameView.displayErrorMessage(ErrorType.TAKE_AND_WORK);
-        //                     } else {
-        //                         hasWorked = player.rehearse();
-        //                     }
-        //                     break;
-        //                 case UPGRADE:
-        //                     player.upgrade();
-        //                     break;
-        //                 case SCENE:
-        //                     gameView.displaySetInfo(player.getPlayerLocation().getLocationName(), board);
-        //                     break;
-        //                 case WHERE:
-        //                     gameView.displayCurrentLocation(players.get(playerIndex).getPlayerLocation().getLocationName());
-        //                     break;
-        //                 case WHO:
-        //                     gameView.displayCurrentDetails(player.getPlayerName(), player.getPlayerRank(), player.getPlayerDollars(), player.getPlayerCredits(),
-        //                     player.getPlayerRehearsals(), player.getPlayerLocation().getLocationName(), player.getPlayerRole());
-        //                     break;
-        //                 case DETAILS:
-        //                     for (int j = 0; j < players.size(); j++) {
-        //                         PlayerController p = players.get(j);
-        //                         gameView.displayDetails(p.getPlayerName(), p.getPlayerRank(), p.getPlayerDollars(), p.getPlayerCredits(),
-        //                             p.getPlayerRehearsals(), p.getPlayerLocation().getLocationName(), p.getPlayerRole());
-        //                     }
-        //                     break;
-        //                 case END:
-        //                     break;
-        //             }
-        //         } while (action != ActionType.END);
-
-        //         // next player turn
-        //         playerIndex++;
-        //         if (playerIndex >= playerCount) {
-        //             playerIndex = 0;
-        //         }
-        //     }
-        //     board.getBoardTrailer().resetPlayerLocations(players);
-        //     gameView.displayEndDay(currDay);
-        // }
-        // // display winners when the game is over
-        // ArrayList<String> winners = ScoreCalculator.getWinners(players);
-        // gameView.displayWinners(winners);
-    }
-
-    public static void decrementActiveScenes() {
-        activeScenes--;
     }
 
     public static boolean verifyAction(ActionType action) {
@@ -199,6 +96,10 @@ public class Deadwood {
             case TAKE:
                 if (isWorking) {
                     gameView.displayErrorMessage(ErrorType.TAKE_WHILE_WORKING);
+                    return false;
+                } else if (!inSet){
+                    return false;
+                } else if (isWrapped) {
                     return false;
                 } else {
                     return true;
@@ -266,6 +167,11 @@ public class Deadwood {
         hasWorked = false;
         isWorking = player.getPlayerIsWorking();
         inOffice = player.getPlayerLocation().getLocationName().toLowerCase().equals("office");
+        currSet = getSet(player.getPlayerLocation());
+        if (currSet != null) {
+            inSet = true;
+            isWrapped = currSet.getIsWrapped();
+        }
         isTaking = false;
         isMoving = false;
         isUpgrading = false;
@@ -279,24 +185,46 @@ public class Deadwood {
     }
 
     public static void takeButtonClicked() {
-        if (verifyAction(ActionType.TAKE)) {
+        if (verifyAction(ActionType.TAKE) && !hasTaken) {
             isTaking = true;
-            // call ui to highlight available roles
+            ArrayList<Role> roles = getAvailableRoles();
+            if (roles != null) {
+                for (Role i: roles) {
+                    System.out.println(i.getRoleName());
+                }
+                GUIView.highlightRoles(roles);
+            }
+        }
+    }
+
+    public static void roleClicked(Role role) {
+        if (verifyAction(ActionType.ROLE) && !hasTaken) {
+            ArrayList<Role> roles = getAvailableRoles();
+            if (roles.contains(role)) {
+                player.setPlayerRole(role);
+                player.setPlayerIsWorking(true);
+                GUIView.movePlayerToRole(player.getPlayerName(),
+                    player.getPlayerRole().getRoleName());
+                GUIView.clearHighlightRoles(roles);
+            }
+            role.setIsTaken(true);
+            hasTaken = true;
         }
     }
 
     public static void actButtonClicked() {
-        if (verifyAction(ActionType.ACT)) {
+        if (verifyAction(ActionType.ACT) && !hasWorked) {
             // player rolls die
             // display success/failure
             // display role name and role line
             // decrement scene if last shot counter.
+            hasWorked = true;
         }
     }
 
     public static void rehearseButtonClicked() {
-        if (verifyAction(ActionType.REHEARSE)) {
-            // display player gaining 1 rehearsal token
+        if (verifyAction(ActionType.REHEARSE) && !hasWorked) {
+            hasWorked = true;
         }
     }
 
@@ -322,21 +250,20 @@ public class Deadwood {
     public static void locationClicked(Location location) {
         if (verifyAction(ActionType.LOCATION) && !hasMoved) {
             if (player.getPlayerLocation().getAdjacentLocations().contains(location)) {
+                GUIView.clearHightlightLocations(player
+                .getPlayerLocation().getAdjacentLocations());
                 Location prevLocation = player.getPlayerLocation();
                 player.setPlayerLocation(location);
                 GUIView.updatePlayerLocation(prevLocation);
                 GUIView.updatePlayerLocation(location);
+                currSet = getSet(location);
+                if (location instanceof Set) {
+                    inSet = true;
+                }
                 hasMoved = true;
             } else {
                 return;
             }
-            // GUIView.displayMoveInfo();
-        }
-    }
-
-    public static void roleClicked(Role role) {
-        if (verifyAction(ActionType.ROLE)) {
-            // do stuff
         }
     }
 
@@ -346,4 +273,149 @@ public class Deadwood {
         }
     }
 
+    public static Set getSet(Location location) {
+        ArrayList<Set> boardSets = board.getBoardSets();
+        Set currSet = null;
+        for (int i = 0; i < boardSets.size(); i++) {
+            if (boardSets.get(i).getLocationName().toLowerCase().equals(player.
+                getPlayerLocation().getLocationName().toLowerCase())) {
+                    currSet = boardSets.get(i);
+            }
+        }
+
+        return currSet;
+    }
+
+    public static void decrementActiveScenes() {
+        activeScenes--;
+    }
+
+    public static ArrayList<Role> getAvailableRoles() {
+        ArrayList<Role> availableRoles = new ArrayList<Role>();
+        if (currSet == null) {
+            return null;
+        }
+        
+        // Set roles
+        for (int i = 0; i < currSet.getRoles().size(); i++) {
+            if (currSet.getRoles().get(i).getRank() <= player.getPlayerRank() &&
+                                        !currSet.getRoles().get(i).getIsTaken()) {
+                availableRoles.add(currSet.getRoles().get(i));
+            }
+        }
+
+        // Set scene roles
+        Scene setScene = currSet.getScene();
+        for (int i = 0; i < setScene.getRoles().size(); i++) {
+            if ( setScene.getRoles().get(i).getRank() <= player.getPlayerRank() &&
+                                        !setScene.getRoles().get(i).getIsTaken()) {
+                availableRoles.add(setScene.getRoles().get(i));
+            }
+        }
+
+        return availableRoles;
+    }
 }
+
+// int playerIndex = 0;
+// // main game loop
+// for (int i = 0; i < maxDays; i++) {
+//     currDay = i+1;
+//     activeScenes = board.getBoardSets().size();
+//     gameView.displayCurrentDay(currDay);
+
+//     // this loop iterates when a day ends
+//     while (activeScenes > 1) {
+//         PlayerController player = players.get(playerIndex);
+//         ActionType action;
+//         gameView.displayTurn(player.getPlayerName());
+//         boolean hasMoved = false;
+//         boolean hasTaken = false;
+//         boolean hasWorked = false;
+
+//         // controls the players inputs and makes sure they are taking a valid turn
+//         do {
+//             boolean isWorking = player.getPlayerIsWorking();
+//             action = GameView.getPlayerInput();
+//             switch (action) {
+//                 case HELP:
+//                     gameView.displayHelp();
+//                     break;
+//                 case MOVE:
+//                     if (hasMoved) {
+//                         gameView.displayErrorMessage(ErrorType.ALREADY_MOVED);
+//                     } else if (isWorking) {
+//                         gameView.displayErrorMessage(ErrorType.MOVE_WHILE_WORKING);
+//                         break;
+//                     } else if (hasWorked) {
+//                         gameView.displayErrorMessage(ErrorType.WORK_AND_MOVE);
+//                     } else {
+//                         hasMoved = player.move();
+//                     }
+//                     break;
+//                 case TAKE:
+//                     if (isWorking) {
+//                         gameView.displayErrorMessage(ErrorType.TAKE_WHILE_WORKING);
+//                     } else {
+//                         hasTaken = player.take();
+//                     }
+//                     break;
+//                 case ACT:
+//                     if (hasWorked) {
+//                         gameView.displayErrorMessage(ErrorType.ALREADY_WORKED);
+//                     } else if (!isWorking) {
+//                         gameView.displayErrorMessage(ErrorType.ACT_WHILE_NOT_WORKING);
+//                     } else if (hasTaken) {
+//                         gameView.displayErrorMessage(ErrorType.TAKE_AND_WORK);
+//                     } else {
+//                         hasWorked = player.act();
+//                     }
+//                     break;
+//                 case REHEARSE:
+//                     if (hasWorked) {
+//                         gameView.displayErrorMessage(ErrorType.ALREADY_WORKED);
+//                     } else if (!isWorking) {
+//                         gameView.displayErrorMessage(ErrorType.REHEARSE_WHILE_NOT_WORKING);
+//                     } else if (hasTaken) {
+//                         gameView.displayErrorMessage(ErrorType.TAKE_AND_WORK);
+//                     } else {
+//                         hasWorked = player.rehearse();
+//                     }
+//                     break;
+//                 case UPGRADE:
+//                     player.upgrade();
+//                     break;
+//                 case SCENE:
+//                     gameView.displaySetInfo(player.getPlayerLocation().getLocationName(), board);
+//                     break;
+//                 case WHERE:
+//                     gameView.displayCurrentLocation(players.get(playerIndex).getPlayerLocation().getLocationName());
+//                     break;
+//                 case WHO:
+//                     gameView.displayCurrentDetails(player.getPlayerName(), player.getPlayerRank(), player.getPlayerDollars(), player.getPlayerCredits(),
+//                     player.getPlayerRehearsals(), player.getPlayerLocation().getLocationName(), player.getPlayerRole());
+//                     break;
+//                 case DETAILS:
+//                     for (int j = 0; j < players.size(); j++) {
+//                         PlayerController p = players.get(j);
+//                         gameView.displayDetails(p.getPlayerName(), p.getPlayerRank(), p.getPlayerDollars(), p.getPlayerCredits(),
+//                             p.getPlayerRehearsals(), p.getPlayerLocation().getLocationName(), p.getPlayerRole());
+//                     }
+//                     break;
+//                 case END:
+//                     break;
+//             }
+//         } while (action != ActionType.END);
+
+//         // next player turn
+//         playerIndex++;
+//         if (playerIndex >= playerCount) {
+//             playerIndex = 0;
+//         }
+//     }
+//     board.getBoardTrailer().resetPlayerLocations(players);
+//     gameView.displayEndDay(currDay);
+// }
+// // display winners when the game is over
+// ArrayList<String> winners = ScoreCalculator.getWinners(players);
+// gameView.displayWinners(winners);
