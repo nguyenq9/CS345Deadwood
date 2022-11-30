@@ -293,7 +293,7 @@ public class Deadwood {
     public static ArrayList<Role> getAvailableRoles() {
         ArrayList<Role> availableRoles = new ArrayList<Role>();
         if (currSet == null) {
-            return null;
+            return availableRoles;
         }
         
         // Set roles
