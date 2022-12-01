@@ -13,96 +13,31 @@ public class PlayerController {
     }
 
     // returns true if the player successfully moves, or false if they don't
-    public boolean move() {
-        Location currLocation = getPlayerLocation();
-        ArrayList<Location> adj = currLocation.getAdjacentLocations();
-        ArrayList<String> locationStrings = new ArrayList<String>();
-        for (int i = 0; i < adj.size(); i++) {
-            locationStrings.add(adj.get(i).getLocationName());
-        }
-        playerView.displayMoveOption(locationStrings);
-
-        String input = playerView.getMoveOption();
-        for (int i = 0; i < adj.size(); i++) {
-            if (adj.get(i).getLocationName().toLowerCase().equals(input)) {
-                setPlayerLocation(adj.get(i));
-                playerView.displayMovingOutcome(getPlayerName(), getPlayerLocation().getLocationName());
-                return true;
-            }
-        }
-        playerView.displayErrorMessage(ErrorType.INVALID_LOCATION);
-        return false;
+    public void move() {
+        ArrayList<Role> roles = getAvailableRoles();
+        GUIView.clearHighlightRoles(roles);
+        GUIView.highlightLocations(getPlayerLocation().getAdjacentLocations());
     }
 
-    // returns true if the player successfully takes a role, or false if they don't
-    public boolean take() {
-        ArrayList<Set> boardSets = boardController.getBoardSets();
-        Set currSet = null;
+    public void take() {
+        GUIView.clearHightlightLocations(getPlayerLocation().getAdjacentLocations());
+        ArrayList<Role> roles = getAvailableRoles();
+        if (!roles.isEmpty()) {
+            GUIView.highlightRoles(roles);
+        } else {
+            System.out.println("Available roles is null");
+        }
+    }
 
-        // Finds the current set user is one
-        int setIndex = 0;
-        for (int i = 0; i < boardSets.size(); i++) {
-            if (boardSets.get(i).getLocationName().toLowerCase().equals(
-                getPlayerLocation().getLocationName().toLowerCase())) {
-                    currSet = boardSets.get(i);
-                    setIndex = i;
-            }
+    public void role(Role role) {
+        ArrayList<Role> roles = getAvailableRoles();
+        if (roles.contains(role)) {
+            setPlayerRole(role);
+            setPlayerIsWorking(true);
+            GUIView.movePlayerToRole(getPlayerName(), role.getRoleName(), role.getOnCard());
+            GUIView.clearHighlightRoles(roles);
         }
-
-        if (currSet == null || currSet.getIsWrapped()) {
-            playerView.displayErrorMessage(ErrorType.NO_ROLES);
-            return false;
-        }
-
-        // Displays all available roles
-        ArrayList<Role> setRoles = currSet.getRoles();  // off card
-        ArrayList<String> roleStrings = new ArrayList<String>();
-        ArrayList<Boolean> roleBoolean = new ArrayList<Boolean>();
-        ArrayList<Integer> roleRank = new ArrayList<Integer>();
-        for (int i = 0; i < setRoles.size(); i++) {
-            if (!setRoles.get(i).getIsTaken()) {
-                roleStrings.add(setRoles.get(i).getRoleName());
-                roleBoolean.add(setRoles.get(i).getOnCard());
-                roleRank.add(setRoles.get(i).getRank());
-            }
-        }
-        ArrayList<Role> sceneRoles = currSet.getScene().getRoles(); // on card
-        for (int i = 0; i < sceneRoles.size(); i++) {
-            if (!sceneRoles.get(i).getIsTaken()) {
-                roleStrings.add(sceneRoles.get(i).getRoleName());
-                roleBoolean.add(sceneRoles.get(i).getOnCard());
-                roleRank.add(sceneRoles.get(i).getRank());
-            }
-        }
-        playerView.displayRoleOptions(roleStrings, roleRank, roleBoolean);
-
-        // get user input
-        String input = playerView.getTakeRoleOption();
-        for (int i = 0; i < setRoles.size(); i++) {
-            if (setRoles.get(i).getRoleName().toLowerCase().equals(input) && !setRoles.get(i).getIsTaken() && setRoles.get(i).getRank() <= getPlayerRank()) {
-                setPlayerSet(currSet);
-                setPlayerRole(setRoles.get(i));
-                boardController.getBoardSets().get(setIndex).getRoles().get(i).setActor(this);
-                setPlayerIsWorking(true);
-                boardController.getBoardSets().get(setIndex).getRoles().get(i).setIsTaken(true);
-                playerView.displayTakeRoleOutcome(getPlayerName(), setRoles.get(i).getRoleName());
-                return true;
-            }
-        }
-        for (int i = 0; i < sceneRoles.size(); i++) {
-            if (sceneRoles.get(i).getRoleName().toLowerCase().equals(input) && !sceneRoles.get(i).getIsTaken() && sceneRoles.get(i).getRank() <= getPlayerRank()) {
-                setPlayerSet(currSet);
-                setPlayerRole(sceneRoles.get(i));
-                boardController.getBoardSets().get(setIndex).getScene().getRoles().get(i).setActor(this);
-                setPlayerIsWorking(true);
-                boardController.getBoardSets().get(setIndex).getScene().getRoles().get(i).setIsTaken(true);
-                playerView.displayTakeRoleOutcome(getPlayerName(), sceneRoles.get(i).getRoleName());
-                return true;
-            }
-        }
-        playerView.displayErrorMessage(ErrorType.INVALID_ROLE);
-        return false;
-
+        role.setIsTaken(true);
     }
 
     // returns true if the player successfully upgrades, or false if they don't
@@ -111,8 +46,8 @@ public class PlayerController {
         playerView.displayUpgradeOptions(getPlayerRank(), office.getUpgradeDollarCosts(), office.getUpgradeCreditCosts());
         int choiceRank = playerView.getUpgradeOption();
         if (choiceRank <= 6 && choiceRank > this.getPlayerRank()) {
-            String currency = playerView.getUpgradeCurrency();
-            if (currency.toLowerCase().equals("credits")) {
+            Currency currency = playerView.getUpgradeCurrency();
+            if (currency == Currency.CREDITS) {
                 int creditCost = office.getCreditUpgradeCost(choiceRank);
                 if (getPlayerCredits() >= creditCost) {
                     setPlayerRank(choiceRank);
@@ -120,7 +55,7 @@ public class PlayerController {
                     playerView.displayUpgradeOutcome(choiceRank);
                     return true;
                 }
-            } else if (currency.toLowerCase().equals("dollars")) {
+            } else if (currency == Currency.DOLLARS) {
                 int dollarCost = office.getDollarUpgradeCost(choiceRank);
                 if (getPlayerDollars() >= dollarCost) {
                     setPlayerRank(choiceRank);
@@ -128,7 +63,7 @@ public class PlayerController {
                     playerView.displayUpgradeOutcome(choiceRank);
                     return true;
                 }
-            }
+            } 
         }
         playerView.displayErrorMessage(ErrorType.INVALID_RANK);
         return false;
@@ -136,15 +71,19 @@ public class PlayerController {
 
     // returns true if the eplayer successfully rehearses, or false if they don't
     public boolean rehearse() {
-        Set set = getPlayerSet();
-        if (getPlayerRole() == null || set == null || set.getIsWrapped()) {
+        Location location = getPlayerLocation();
+        Set currSet = getSet(location);
+
+        if (currSet == null)  {
             return false;
         }
-        if (getPlayerRehearsals() == set.getScene().getBudget()) {
+
+        if (getPlayerRehearsals() == currSet.getScene().getBudget()) {
             return act();
         } else {
             incrementPlayerRehearsals();
-            playerView.displayRehearsingOutcome(getPlayerRole().getRoleLine(), getPlayerName());
+            GUIView.displayPlayerInfo(getPlayerName(), getPlayerRank(),
+                getPlayerDollars(), getPlayerCredits(), getPlayerRehearsals());
             return true;
         }
     }
@@ -155,17 +94,67 @@ public class PlayerController {
         int roll = Dice.roll() + getPlayerRehearsals();
         int budget = set.getScene().getBudget();
         boolean success = roll >= budget;
+
+        GUIView.displayActInformation(roll, success);
         playerView.displayActRoll(roll);
         playerView.displayActingOutcome(getPlayerRole().getRoleLine(), success);
+
         bank.payActingRewards(this, getPlayerRole().getOnCard(), success);
+        GUIView.displayPlayerInfo(getPlayerName(), getPlayerRank(),
+            getPlayerDollars(), getPlayerCredits(), getPlayerRehearsals());
+        
         if (success) {
             set.decrementShotCounters();
             if (set.getShotCounters() == 0) {
                 playerView.displaySceneWrapped();
                 set.wrapScene();
+                GUIView.wrapScene();
             }
         }
+
         return true;
+    }
+
+    public ArrayList<Role> getAvailableRoles() {
+        ArrayList<Role> availableRoles = new ArrayList<Role>();
+        Location location = getPlayerLocation();
+        Set currSet = getSet(location);
+
+        if (currSet == null) {
+            return availableRoles;
+        }
+        
+        // Set roles
+        for (int i = 0; i < currSet.getRoles().size(); i++) {
+            if (currSet.getRoles().get(i).getRank() <= getPlayerRank() &&
+                                        !currSet.getRoles().get(i).getIsTaken()) {
+                availableRoles.add(currSet.getRoles().get(i));
+            }
+        }
+
+        // Set scene roles
+        Scene setScene = currSet.getScene();
+        for (int i = 0; i < setScene.getRoles().size(); i++) {
+            if ( setScene.getRoles().get(i).getRank() <= getPlayerRank() &&
+                                        !setScene.getRoles().get(i).getIsTaken()) {
+                availableRoles.add(setScene.getRoles().get(i));
+            }
+        }
+
+        return availableRoles;
+    }
+
+    public Set getSet(Location location) {
+        ArrayList<Set> boardSets = boardController.getBoardSets();
+        Set currSet = null;
+        for (int i = 0; i < boardSets.size(); i++) {
+            if (boardSets.get(i).getLocationName().toLowerCase().equals(
+                getPlayerLocation().getLocationName().toLowerCase())) {
+                    currSet = boardSets.get(i);
+            }
+        }
+
+        return currSet;
     }
 
     public String getPlayerName() {

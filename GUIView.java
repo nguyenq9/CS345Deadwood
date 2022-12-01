@@ -1,4 +1,5 @@
 import java.io.FileInputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -17,6 +18,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
+import javafx.scene.media.*;
 
 public class GUIView extends Application {
     
@@ -32,12 +34,15 @@ public class GUIView extends Application {
     private static HashMap<String, Button> locationNodes = new HashMap<String, Button>();
     private static HashMap<String, Button> roleNodes = new HashMap<String, Button>();
     private static HashMap<String, Button> buttonNodes = new HashMap<String, Button>();
+    private static HashMap<String, Button> upgradeNodes = new HashMap<String, Button>();
     private static HashMap<String, ArrayList<Button>> onCardRoleNodes = new HashMap<String, ArrayList<Button>>();
     private static Font[] deadwoodFonts = new Font[5];
     private static Image[][] diceImages = new Image[9][6];
     private static Image shotImage;
     private static Background cardBackground;
     private static Background transparentBackground;
+    public static Media sound; 
+    public static MediaPlayer mediaPlayer;
 
     public static void launchApp(double screenScale, BoardController boardController) throws Exception {
         board = boardController;
@@ -68,13 +73,20 @@ public class GUIView extends Application {
         return new Background(new BackgroundImage(new Image(new FileInputStream(imagePath)), BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, null, new BackgroundSize(100 * scale, 100 * scale, true, true, true, false)));
     }
 
-    public void setPlayerCount(String numPlayers) throws Exception {
-        playerCount = Integer.parseInt(numPlayers);
+    public void setPlayerCount(int numPlayers) throws Exception {
+        playerCount = numPlayers;
         Deadwood.initializePlayers(playerCount);
     }
 
     @Override
     public void start(Stage mainStage) throws Exception {
+        //set music
+        sound = new Media(new File("resources/gamemusic.mp3").toURI().toString());
+        mediaPlayer = new MediaPlayer(sound);
+        mediaPlayer.setVolume(0.05);
+        mediaPlayer.setCycleCount(mediaPlayer.INDEFINITE);
+        mediaPlayer.play();
+
         stage = mainStage;
         // Set the title of the window
         mainStage.setTitle("Deadwood Test");
@@ -88,14 +100,14 @@ public class GUIView extends Application {
 
         for (int i = 2; i <= 8; i++) {
             Button button = new Button();
-            button.setId("" + i);
+            int playerNum = i;
             button.setText(i + " Players");
             button.setFont(deadwoodFonts[1]);
             // Set the button to call Deadwood.RoleClicked when clicked, passing in the associated Role
             button.setOnAction(new EventHandler<ActionEvent>() {
                 public void handle(ActionEvent event) {
                     try {
-                        setPlayerCount(button.getId());
+                        setPlayerCount(playerNum);
                         displayBoard();
                         Deadwood.initialDisplay();
                     } catch (Exception e) {
@@ -163,6 +175,8 @@ public class GUIView extends Application {
         createShotCounters(sets);
         createOffCardRoles(roles);
         createPlayers();
+        createUpgrades(Currency.CREDITS, board.getBoardOffice().getUpgradeAreaCredit());
+        createUpgrades(Currency.DOLLARS, board.getBoardOffice().getUpgradeAreaDollar());
         
         // Add the board panel to the root node
         root.setBottomAnchor(boardGroup, 0d);
@@ -275,6 +289,8 @@ public class GUIView extends Application {
             roleButton.setBackground(backgroundFromImage(diceImages[8][role.getRank() - 1]));
 
             // Set the size and coordinates of the button to their appropriate values
+            roleButton.setMinHeight(role.getArea()[2] * scale);
+            roleButton.setMinWidth(role.getArea()[3] * scale);
             roleButton.setPrefHeight(role.getArea()[2] * scale);
             roleButton.setPrefWidth(role.getArea()[3] * scale);
             boardGroup.setLeftAnchor(roleButton, role.getArea()[0] * scale);
@@ -330,6 +346,38 @@ public class GUIView extends Application {
         root.getChildren().add(button);
     }
 
+    private static void createUpgrades(Currency currency, int[][] areas) {
+        for (int i = 0; i < 5; i++) {
+            for (int j = 1; j < 4; j++) {
+                System.out.println(areas[i][j]);
+            }
+        }
+        for (int i = 0; i < 5; i++) {
+            Button upgradeButton = new Button();
+            int rank = i + 2;
+            // Set the text, size, and coordinates of the button to their appropriate values
+            upgradeButton.setBackground(transparentBackground);
+            upgradeButton.setMinHeight(areas[i][2] * scale);
+            upgradeButton.setMinWidth(areas[i][3] * scale);
+            upgradeButton.setPrefHeight(areas[i][2] * scale);
+            upgradeButton.setPrefWidth(areas[i][3] * scale);
+            boardGroup.setLeftAnchor(upgradeButton, areas[i][0] * scale);
+            boardGroup.setTopAnchor(upgradeButton, areas[i][1] * scale);
+            // Set the button to call Deadwood.MoveButtonClicked when Clicked
+            upgradeButton.setOnAction(new EventHandler<ActionEvent>() {
+                public void handle(ActionEvent event) {
+                    Deadwood.upgradeChoiceClicked(rank, currency);
+                }
+            });
+            if (currency == Currency.DOLLARS) {
+                upgradeNodes.put("d" + rank, upgradeButton);
+            } else if (currency == Currency.CREDITS) {
+                upgradeNodes.put("c" + rank, upgradeButton);
+            }
+            boardGroup.getChildren().add(upgradeButton);
+        }
+    }
+
     public static void displayPlayerInfo(String name, int rank, int dollars, int credits, int rehearsals) {
         String info = "Player: " + name + "\nRank: " + rank + "\nDollars: "
                         + dollars + "\nCredits: " + credits + "\nRehearsals: " + rehearsals;
@@ -363,6 +411,8 @@ public class GUIView extends Application {
                 roleButton.setBackground(backgroundFromImage(diceImages[8][role.getRank() - 1]));
     
                 // Set the size and coordinates of the button to their appropriate values
+                roleButton.setMinHeight(role.getArea()[2] * scale);
+                roleButton.setMinWidth(role.getArea()[3] * scale);
                 roleButton.setPrefHeight(role.getArea()[2] * scale);
                 roleButton.setPrefWidth(role.getArea()[3] * scale);
                 boardGroup.setLeftAnchor(roleButton, locationButton.getLayoutX() + (role.getArea()[0]) * scale);
@@ -422,6 +472,24 @@ public class GUIView extends Application {
             roleButton.setBorder(Border.EMPTY);
         }
     }
+
+    public static void highlightUpgrades(ArrayList<String> upgrades) {
+        for (int i = 0; i < upgrades.size(); i++) {
+            Button upgradeButton = upgradeNodes.get(upgrades.get(i));
+            upgradeButton.setBorder(new Border(new BorderStroke(Color.HOTPINK, new BorderStrokeStyle(StrokeType.OUTSIDE, null, null, 10, 0, null), new CornerRadii(1), new BorderWidths(2))));
+        }
+    }
+
+    public static void clearHighlightUpgrades() {
+        for (int i = 2; i <= 6; i++) {
+            Button upgradeButton = upgradeNodes.get("d" + i);
+            upgradeButton.setBorder(Border.EMPTY);
+        }
+        for (int i = 2; i <= 6; i++) {
+            Button upgradeButton = upgradeNodes.get("c" + i);
+            upgradeButton.setBorder(Border.EMPTY);
+        }
+    }
     
     public static void updatePlayerLocation(Location location) {
         int standingPlayerCount = 0;
@@ -463,5 +531,13 @@ public class GUIView extends Application {
         }
         boardGroup.setLeftAnchor(playerNode, (roleNode.getLayoutX()));
         boardGroup.setTopAnchor(playerNode, (roleNode.getLayoutY()));
+    }
+
+    public static void displayActInformation(int roll, boolean success) {
+        
+    }
+
+    public static void wrapScene() {
+        
     }
 }

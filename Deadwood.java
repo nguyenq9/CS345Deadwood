@@ -90,6 +90,8 @@ public class Deadwood {
                 } else if (hasWorked) {
                     gameView.displayErrorMessage(ErrorType.WORK_AND_MOVE);
                     return false;
+                } else if (hasTaken) {
+                    return false;
                 } else {
                     return true;
                 }
@@ -114,6 +116,8 @@ public class Deadwood {
                 } else if (hasTaken) {
                     gameView.displayErrorMessage(ErrorType.TAKE_AND_WORK);
                     return false;
+                } else if (isWrapped) {
+                    return false;
                 } else {
                     return true;
                 }
@@ -126,6 +130,9 @@ public class Deadwood {
                     return false;
                 } else if (hasTaken) {
                     gameView.displayErrorMessage(ErrorType.TAKE_AND_WORK);
+                    return false;
+                } else if (isWrapped) {
+                    // scene wrapped
                     return false;
                 } else {
                     return true;
@@ -166,7 +173,6 @@ public class Deadwood {
         hasTaken = false;
         hasWorked = false;
         isWorking = player.getPlayerIsWorking();
-        inOffice = player.getPlayerLocation().getLocationName().toLowerCase().equals("office");
         currSet = getSet(player.getPlayerLocation());
         if (currSet != null) {
             inSet = true;
@@ -178,64 +184,56 @@ public class Deadwood {
     }
 
     public static void moveButtonClicked() {
-        if (verifyAction(ActionType.MOVE)) {
+        if (verifyAction(ActionType.MOVE) && !isWorking) {
+            player.move();
             isMoving = true;
-            GUIView.highlightLocations(player.getPlayerLocation().getAdjacentLocations());
         }
     }
 
     public static void takeButtonClicked() {
         if (verifyAction(ActionType.TAKE) && !hasTaken) {
+            player.take();
             isTaking = true;
-            ArrayList<Role> roles = getAvailableRoles();
-            if (roles != null) {
-                for (Role i: roles) {
-                    System.out.println(i.getRoleName());
-                }
-                GUIView.highlightRoles(roles);
-            }
         }
     }
 
     public static void roleClicked(Role role) {
         if (verifyAction(ActionType.ROLE) && !hasTaken) {
-            ArrayList<Role> roles = getAvailableRoles();
-            if (roles.contains(role)) {
-                player.setPlayerRole(role);
-                player.setPlayerIsWorking(true);
-                GUIView.movePlayerToRole(player.getPlayerName(),
-                    role.getRoleName(), role.getOnCard());
-                GUIView.clearHighlightRoles(roles);
-            }
-            role.setIsTaken(true);
+            player.role(role);
             hasTaken = true;
         }
     }
 
     public static void actButtonClicked() {
+        player.addPlayerDollars(5);
+        player.addPlayerCredits(5);
         if (verifyAction(ActionType.ACT) && !hasWorked) {
-            // player rolls die
-            // display success/failure
-            // display role name and role line
-            // decrement scene if last shot counter.
+            player.act();
             hasWorked = true;
         }
     }
 
     public static void rehearseButtonClicked() {
         if (verifyAction(ActionType.REHEARSE) && !hasWorked) {
+            player.rehearse();
             hasWorked = true;
         }
     }
 
     public static void upgradeButtonClicked() {
         if (verifyAction(ActionType.UPGRADE)) {
+            GUIView.highlightUpgrades(board.getBoardOffice().getAvailableUpgrades(player.getPlayerRank(), player.getPlayerDollars(), player.getPlayerCredits()));
+            System.out.println("UPGRADING");
             isUpgrading = true;
         }
     }
 
     public static void endTurnButtonClicked() {
         if (verifyAction(ActionType.END)) {
+            GUIView.clearHightlightLocations(player
+            .getPlayerLocation().getAdjacentLocations());
+            ArrayList<Role> roles = player.getAvailableRoles();
+            GUIView.clearHighlightRoles(roles);
             playerIndex++;
             if (playerIndex >= playerCount) {
                 playerIndex = 0;
@@ -258,6 +256,7 @@ public class Deadwood {
                 GUIView.updatePlayerLocation(location);
                 currSet = getSet(location);
                 if (currSet != null) {
+                    // player.setPlayerSet(currSet);
                     if (!currSet.getScene().getVisible()) {
                         currSet.getScene().setVisible(true);
                         GUIView.revealSet(currSet);
@@ -265,15 +264,16 @@ public class Deadwood {
                     inSet = true;
                 }
                 hasMoved = true;
+                inOffice = player.getPlayerLocation().getLocationName().toLowerCase().equals("office");
             } else {
                 return;
             }
         }
     }
 
-    private static void upgradeChoiceClicked(int rank, String currency) {
+    public static void upgradeChoiceClicked(int rank, Currency currency) {
         if (verifyAction(ActionType.UPGRADING)) {
-            // do stuff
+            GUIView.clearHighlightUpgrades();
         }
     }
 
@@ -294,31 +294,6 @@ public class Deadwood {
         activeScenes--;
     }
 
-    public static ArrayList<Role> getAvailableRoles() {
-        ArrayList<Role> availableRoles = new ArrayList<Role>();
-        if (currSet == null) {
-            return availableRoles;
-        }
-        
-        // Set roles
-        for (int i = 0; i < currSet.getRoles().size(); i++) {
-            if (currSet.getRoles().get(i).getRank() <= player.getPlayerRank() &&
-                                        !currSet.getRoles().get(i).getIsTaken()) {
-                availableRoles.add(currSet.getRoles().get(i));
-            }
-        }
-
-        // Set scene roles
-        Scene setScene = currSet.getScene();
-        for (int i = 0; i < setScene.getRoles().size(); i++) {
-            if ( setScene.getRoles().get(i).getRank() <= player.getPlayerRank() &&
-                                        !setScene.getRoles().get(i).getIsTaken()) {
-                availableRoles.add(setScene.getRoles().get(i));
-            }
-        }
-
-        return availableRoles;
-    }
 }
 
 // int playerIndex = 0;

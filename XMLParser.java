@@ -1,3 +1,4 @@
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -151,6 +152,49 @@ public class XMLParser {
         return upgradeCosts;
     }
 
+
+    private int[][] parseUpgradeSelectionArea(NodeList attributes, String type) throws Exception {
+        int[][] area = new int[5][4];
+        int index = 0;
+        // filling with 0
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 4; j++) {
+                area[i][j] = 0;
+            }
+        }
+
+        for (int i = 0; i < attributes.getLength(); i++) {
+            Node upOpt = attributes.item(i);
+            String upOptName = upOpt.getNodeName();
+            if (upOptName.equals("upgrades")) {
+                NodeList upgrades = attributes.item(i).getChildNodes();
+                for (int j = 0; j < upgrades.getLength(); j++) {
+                    Node upgrade = upgrades.item(j);
+                    String upgradeName = upgrade.getNodeName();
+                    if (upgradeName.equals("upgrade")) {
+                        String currency = upgrade.getAttributes().getNamedItem("currency").getNodeValue();
+                        if (currency.equals(type)) {
+                            NodeList upArea = upgrades.item(j).getChildNodes();
+                            for (int k = 0; k < upArea.getLength(); k++) {
+                                Node u = upArea.item(k);
+                                String uName = u.getNodeName();
+                                if (uName.equals("area")) {
+                                    area[index][0] = Integer.parseInt(u.getAttributes().getNamedItem("x").getNodeValue());
+                                    area[index][1] = Integer.parseInt(u.getAttributes().getNamedItem("y").getNodeValue());
+                                    area[index][3] = Integer.parseInt(u.getAttributes().getNamedItem("h").getNodeValue());
+                                    area[index][2] = Integer.parseInt(u.getAttributes().getNamedItem("w").getNodeValue());
+                                }
+                            }
+                            index++;
+                        }
+                    }
+                }
+            }
+        }
+
+        return area;
+    }
+
     private Trailer parseTrailer(Node location, ArrayList<Location> locations) throws Exception {
         NodeList attributes = location.getChildNodes();
         ArrayList<Location> adjacentLocations = getNeighbors(attributes, locations);
@@ -164,7 +208,9 @@ public class XMLParser {
         int[] area = getArea(attributes);
         int[] upgradeDollarCosts = parseUpgradeDollarCosts(attributes);
         int[] upgradeCreditCosts = parseUpgradeCreditCosts(attributes);
-        return new CastingOffice(adjacentLocations, area, upgradeDollarCosts, upgradeCreditCosts);
+        int[][] upgradeSelectionAreaCredits = parseUpgradeSelectionArea(attributes, "credit");
+        int[][] upgradeSelectionAreaDollars = parseUpgradeSelectionArea(attributes, "dollar");
+        return new CastingOffice(adjacentLocations, area, upgradeDollarCosts, upgradeCreditCosts, upgradeSelectionAreaCredits, upgradeSelectionAreaDollars);
     }
 
     private int[][] parseShotCounterArea(Node shotCounter) throws Exception{

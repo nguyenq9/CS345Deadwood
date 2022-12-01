@@ -309,10 +309,21 @@ public class GameView {
         
     }
 
-    public String getUpgradeCurrency() {
+    public Currency getUpgradeCurrency() {
         System.out.println("How do you want to pay for this upgrade?");
         System.out.print("> ");
-        String currency = input.nextLine();
-        return currency;
+        String currency = input.nextLine().toLowerCase();
+        switch (currency) {
+            case "dollars":
+                return Currency.DOLLARS;
+            case "dollar":
+                return Currency.DOLLARS;
+            case "creditss":
+                return Currency.CREDITS;
+            case "credit":
+                return Currency.CREDITS;
+            default:
+                return Currency.ERROR;
+        }
     }
 }
