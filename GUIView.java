@@ -25,9 +25,17 @@ public class GUIView extends Application {
     
     private static BoardController board;
     private static double scale;
+
     private static Text playerInfo;
     private static Text dayNum;
     private static Text actInfo;
+
+    private static Text currentPlayer;
+    private static Text playerRank;
+    private static Text playerDollars;
+    private static Text playerCredits;
+    private static Text playerTokens;
+
     private static int playerCount;
     private static Stage stage;
     private static AnchorPane root;
@@ -167,16 +175,14 @@ public class GUIView extends Application {
         // Get locations, sets, and roles into lists
         ArrayList<Location> locations = board.getBoardLocations();
         ArrayList<Set> sets = board.getBoardSets();
-        ArrayList<Role> roles = new ArrayList<Role>();
         for (int i = 0; i < sets.size(); i++) {
             Set set = sets.get(i);
-            roles.addAll(set.getRoles());
+            createOffCardRoles(set.getLocationName(), set.getRoles());
         }
         
         // Create UI elements
         createLocations(locations);
         createShotCounters(sets);
-        createOffCardRoles(roles);
         createPlayers();
         createUpgrades(Currency.CREDITS, board.getBoardOffice().getUpgradeAreaCredit());
         createUpgrades(Currency.DOLLARS, board.getBoardOffice().getUpgradeAreaDollar());
@@ -275,7 +281,11 @@ public class GUIView extends Application {
         }
     }
 
-    private static void createOffCardRoles(ArrayList<Role> roles) throws Exception {
+    private static String getRoleId(String roleName, int roleRank, String locationName) {
+        return (roleName + ":" + roleRank + "@" + locationName);
+    }
+
+    private static void createOffCardRoles(String locationName, ArrayList<Role> roles) throws Exception {
         // For every role on the board, create a button for it on the panel
         for (int i = 0; i < roles.size(); i++) {
             Role role = roles.get(i);
@@ -300,8 +310,8 @@ public class GUIView extends Application {
             boardGroup.setLeftAnchor(roleButton, role.getArea()[0] * scale);
             boardGroup.setTopAnchor(roleButton, role.getArea()[1] * scale);
 
-        
-            roleNodes.put(role.getRoleName(), roleButton);            // Add the button to the board panel
+            String roleID = getRoleId(role.getRoleName(), role.getRank(), locationName);
+            roleNodes.put(roleID, roleButton);            // Add the button to the board panel
             boardGroup.getChildren().add(roleButton);
         }
     }
@@ -354,11 +364,6 @@ public class GUIView extends Application {
     }
 
     private static void createUpgrades(Currency currency, int[][] areas) {
-        for (int i = 0; i < 5; i++) {
-            for (int j = 1; j < 4; j++) {
-                System.out.println(areas[i][j]);
-            }
-        }
         for (int i = 0; i < 5; i++) {
             Button upgradeButton = new Button();
             int rank = i + 2;
@@ -427,7 +432,8 @@ public class GUIView extends Application {
                 boardGroup.setTopAnchor(roleButton, locationButton.getLayoutY() + (role.getArea()[1]) * scale);
     
                 // Add the button to the board panel
-                roleNodes.put(role.getRoleName(), roleButton);
+                String roleID = getRoleId(role.getRoleName(), role.getRank(), set.getLocationName());
+                roleNodes.put(roleID, roleButton);
                 cardRoleNodes.add(roleButton);
                 boardGroup.getChildren().add(roleButton);
             }
@@ -438,32 +444,33 @@ public class GUIView extends Application {
         }
     }
 
-    public static void removeSet(Set set) {
-        Button locationButton = locationNodes.get(set.getLocationName());
+    public static void removeSet(String setName) {
+        Button locationButton = locationNodes.get(setName);
         locationButton.setBackground(transparentBackground);
-        ArrayList<Button> cardRoleNodes = onCardRoleNodes.get(set.getLocationName());
+        ArrayList<Button> cardRoleNodes = onCardRoleNodes.get(setName);
         for (int i = 0; i < cardRoleNodes.size(); i++) {
             boardGroup.getChildren().remove(cardRoleNodes.get(i));
         }
     }
 
-    public static void highlightLocations(ArrayList<Location> locations) {
-        for (int i = 0; i < locations.size(); i++) {
-            Button locationButton = locationNodes.get(locations.get(i).getLocationName());
+    public static void highlightLocations(ArrayList<String> locationNames) {
+        for (int i = 0; i < locationNames.size(); i++) {
+            Button locationButton = locationNodes.get(locationNames.get(i));
             locationButton.setBorder(new Border(new BorderStroke(Color.HOTPINK, new BorderStrokeStyle(StrokeType.OUTSIDE, null, null, 10, 0, null), null, new BorderWidths(5))));
         }
     }
 
-    public static void clearHightlightLocations(ArrayList<Location> locations) {
-        for (int i = 0; i < locations.size(); i++) {
-            Button locationButton = locationNodes.get(locations.get(i).getLocationName());
+    public static void clearHightlightLocations(ArrayList<String> locationNames) {
+        for (int i = 0; i < locationNames.size(); i++) {
+            Button locationButton = locationNodes.get(locationNames.get(i));
             locationButton.setBorder(Border.EMPTY);
         }
     }
 
-    public static void highlightRoles(ArrayList<Role> roles) {
-        for (int i = 0; i < roles.size(); i++) {
-            Button roleButton = roleNodes.get(roles.get(i).getRoleName());
+    public static void highlightRoles(String locationName, ArrayList<String> roleNames, ArrayList<Integer> roleRanks) {
+        for (int i = 0; i < roleNames.size(); i++) {
+            String roleId = getRoleId(roleNames.get(i), roleRanks.get(i), locationName);
+            Button roleButton = roleNodes.get(roleId);
             if (roleButton == null) {
                 continue;
             }
@@ -471,9 +478,10 @@ public class GUIView extends Application {
         }
     }
 
-    public static void clearHighlightRoles(ArrayList<Role> roles) {
-        for (int i = 0; i < roles.size(); i++) {
-            Button roleButton = roleNodes.get(roles.get(i).getRoleName());
+    public static void clearHighlightRoles(String locationName, ArrayList<String> roleNames, ArrayList<Integer> roleRanks) {
+        for (int i = 0; i < roleNames.size(); i++) {
+            String roleId = getRoleId(roleNames.get(i), roleRanks.get(i), locationName);
+            Button roleButton = roleNodes.get(roleId);
             if (roleButton == null) {
                 continue;
             }
@@ -570,10 +578,11 @@ public class GUIView extends Application {
         }
     }
 
-    public static void movePlayerToRole(String playerName, String roleName, boolean onCard) {
+    public static void movePlayerToRole(String playerName, String roleName, int roleRank, String locationName, boolean onCard) {
         ImageView playerNode = playerNodes.get(playerName);
         playerNode.toFront();
-        Button roleNode = roleNodes.get(roleName);
+        String roleId = getRoleId(roleName, roleRank, locationName);
+        Button roleNode = roleNodes.get(roleId);
         if (onCard) {
             playerNode.setFitWidth(40 * scale);
             playerNode.setFitHeight(40 * scale);

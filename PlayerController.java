@@ -12,9 +12,18 @@ public class PlayerController {
         this.boardController = boardController;
     }
 
+    public ArrayList<String> getAdjacentLocationNames() {
+        ArrayList<Location> locations = getPlayerLocation().getAdjacentLocations();
+        ArrayList<String> locationNames = new ArrayList<String>();
+        for (int i = 0; i < locations.size(); i++) {
+            locationNames.add(locations.get(i).getLocationName());
+        }
+        return locationNames;
+    }
+
     // returns true if the player successfully moves, or false if they don't
     public void move(Location location) {
-        GUIView.clearHightlightLocations(getPlayerLocation().getAdjacentLocations());
+        GUIView.clearHightlightLocations(getAdjacentLocationNames());
         Location prevLocation = getPlayerLocation();
         setPlayerLocation(location);
         GUIView.updatePlayerLocation(prevLocation);
@@ -26,8 +35,14 @@ public class PlayerController {
         if (roles.contains(role)) {
             setPlayerRole(role);
             setPlayerIsWorking(true);
-            GUIView.movePlayerToRole(getPlayerName(), role.getRoleName(), role.getOnCard());
-            GUIView.clearHighlightRoles(roles);
+            GUIView.movePlayerToRole(getPlayerName(), role.getRoleName(), role.getRank(), getPlayerLocation().getLocationName(), role.getOnCard());
+            ArrayList<String> roleNames = new ArrayList<String>();
+            ArrayList<Integer> roleRanks = new ArrayList<Integer>();
+            for (int i = 0; i < roles.size(); i++) {
+                roleNames.add(roles.get(i).getRoleName());
+                roleRanks.add(roles.get(i).getRank());
+            }
+            GUIView.clearHighlightRoles(getPlayerLocation().getLocationName(), roleNames, roleRanks);
         }
         role.setIsTaken(true);
     }
@@ -69,6 +84,7 @@ public class PlayerController {
                 
                 currSet.wrapScene();
                 GUIView.removeScene(currSet);
+                GUIView.updatePlayerLocation(location);
             }
         }
         return true;
@@ -126,9 +142,15 @@ public class PlayerController {
     }
 
     public void clearHighlighting() {
-        GUIView.clearHightlightLocations(getPlayerLocation().getAdjacentLocations());
+        GUIView.clearHightlightLocations(getAdjacentLocationNames());
         ArrayList<Role> roles = getAvailableRoles();
-        GUIView.clearHighlightRoles(roles);
+        ArrayList<String> roleNames = new ArrayList<String>();
+        ArrayList<Integer> roleRanks = new ArrayList<Integer>();
+        for (int i = 0; i < roles.size(); i++) {
+            roleNames.add(roles.get(i).getRoleName());
+            roleRanks.add(roles.get(i).getRank());
+        }
+        GUIView.clearHighlightRoles(getPlayerLocation().getLocationName(), roleNames, roleRanks);
         GUIView.clearActInformation();
     }
 

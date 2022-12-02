@@ -186,8 +186,14 @@ public class Deadwood {
     public static void moveButtonClicked() {
         if (verifyAction(ActionType.MOVE) && !isWorking) {
             ArrayList<Role> roles = player.getAvailableRoles();
-            GUIView.clearHighlightRoles(roles);
-            GUIView.highlightLocations(player.getPlayerLocation().getAdjacentLocations());
+            ArrayList<String> roleNames = new ArrayList<String>();
+            ArrayList<Integer> roleRanks = new ArrayList<Integer>();
+            for (int i = 0; i < roles.size(); i++) {
+                roleNames.add(roles.get(i).getRoleName());
+                roleRanks.add(roles.get(i).getRank());
+            }
+            GUIView.clearHighlightRoles(player.getPlayerLocation().getLocationName(), roleNames, roleRanks);
+            GUIView.highlightLocations(player.getAdjacentLocationNames());
             isMoving = true;
         }
     }
@@ -214,15 +220,19 @@ public class Deadwood {
     }
 
     public static void takeButtonClicked() {
-        System.out.println("outside take");
         if (verifyAction(ActionType.TAKE) && !hasTaken) {
-            System.out.println("inside take");
-            GUIView.clearHightlightLocations(player.getPlayerLocation().getAdjacentLocations());
+            GUIView.clearHightlightLocations(player.getAdjacentLocationNames());
             ArrayList<Role> roles = player.getAvailableRoles();
+            ArrayList<String> roleNames = new ArrayList<String>();
+            ArrayList<Integer> roleRanks = new ArrayList<Integer>();
+            for (int i = 0; i < roles.size(); i++) {
+                roleNames.add(roles.get(i).getRoleName());
+                roleRanks.add(roles.get(i).getRank());
+            }
             if (!roles.isEmpty()) {
-                GUIView.highlightRoles(roles);
+                GUIView.highlightRoles(player.getPlayerLocation().getLocationName(), roleNames, roleRanks);
             } else {
-                System.out.println("Available roles is null");
+                System.out.println("No available roles to take");
             }
             isTaking = true;
         }
@@ -230,7 +240,6 @@ public class Deadwood {
 
     public static void roleClicked(Role role) {
         if (verifyAction(ActionType.ROLE) && !hasTaken) {
-            System.out.println("inside role");
             player.take(role);
             hasTaken = true;
         }
@@ -274,13 +283,11 @@ public class Deadwood {
             player = players.get(playerIndex);
             player.updatePlayerGUI();
 
-            System.out.println("Scenes remaining: " + activeScenes);
             if (activeScenes == 1) {
                 currDay++;
                 if (currDay == maxDays) {
                     // end game
                     GUIView.displayWinners();
-                    System.out.println("HEHEHEHE");
                 } else {
                     removeLastScene();
                     board.getBoardTrailer().resetPlayerLocations(players);
