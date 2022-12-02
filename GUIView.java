@@ -1,6 +1,7 @@
 import java.io.FileInputStream;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 
 import javax.swing.Action;
@@ -26,6 +27,7 @@ public class GUIView extends Application {
     private static double scale;
     private static Text playerInfo;
     private static Text dayNum;
+    private static Text actInfo;
     private static int playerCount;
     private static Stage stage;
     private static AnchorPane root;
@@ -36,6 +38,7 @@ public class GUIView extends Application {
     private static HashMap<String, Button> buttonNodes = new HashMap<String, Button>();
     private static HashMap<String, Button> upgradeNodes = new HashMap<String, Button>();
     private static HashMap<String, ArrayList<Button>> onCardRoleNodes = new HashMap<String, ArrayList<Button>>();
+    private static HashMap<String, ArrayList<ImageView>> shotCounterNodes = new HashMap<String, ArrayList<ImageView>>();
     private static Font[] deadwoodFonts = new Font[5];
     private static Image[][] diceImages = new Image[9][6];
     private static Image shotImage;
@@ -185,7 +188,8 @@ public class GUIView extends Application {
 
         // Create text elements
         playerInfo = createText("", Color.WHITE, deadwoodFonts[2], 1200, 20);
-        dayNum = createText("", Color.WHITE, deadwoodFonts[4], 100, 50);
+        dayNum = createText("", Color.WHITE, deadwoodFonts[4], 75, 50);
+        actInfo = createText("", Color.WHITE, deadwoodFonts[1], 100, 150);
 
         createButton("Move", 50, 325, new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
@@ -305,6 +309,7 @@ public class GUIView extends Application {
     private static void createShotCounters(ArrayList<Set> sets) throws Exception {
         for (int i = 0; i < sets.size(); i++) {
             Set set = sets.get(i);
+            ArrayList<ImageView> shotCounters = new ArrayList<ImageView>();
             for (int j = 0; j < set.getMaxShotCounters(); j++) {
                 int[] shotCounterArea = set.getShotCounterAreas()[j];
                 ImageView shotCounter = new ImageView(shotImage);
@@ -312,8 +317,10 @@ public class GUIView extends Application {
                 shotCounter.setY(shotCounterArea[1] * scale);
                 shotCounter.setFitHeight(shotCounterArea[2] * scale);
                 shotCounter.setFitWidth(shotCounterArea[3] * scale);
+                shotCounters.add(shotCounter);
                 boardGroup.getChildren().add(shotCounter);
             }
+            shotCounterNodes.put(set.getLocationName(), shotCounters);
         }
     }
 
@@ -388,6 +395,7 @@ public class GUIView extends Application {
         String info = "Day " + currDay;
         dayNum.setText(info);
     }
+
 
     public static void revealSet(Set set) {
         Button locationButton = locationNodes.get(set.getLocationName());
@@ -518,6 +526,50 @@ public class GUIView extends Application {
         }
     }
 
+    public static void updatePlayerRank(String playerName, int rank) {
+        int i = 0;
+
+        switch(playerName) {
+            case "Blue":
+                i = 0;
+                break;
+           case "Cyan":
+                i = 1;
+                break;
+            case "Green":
+                i = 2;
+                break;
+            case "Orange":
+                i = 3;
+                break;
+            case "Pink":
+                i = 4;
+                break;
+            case "Red":
+                i = 5;
+                break;
+            case "Violet":
+                i = 6;
+                break;
+            case "Yellow":
+                i = 7;
+                break;
+                
+        }
+        playerNodes.get(playerName).setImage(diceImages[i][rank - 1]);
+    }
+
+    public static void removeShotCounter(Set set) {
+        ArrayList<ImageView> shotCounters = shotCounterNodes.get(set.getLocationName());
+        if (shotCounters.size() > 0) {
+            ImageView shotCounter = shotCounters.remove(0);
+            boardGroup.getChildren().remove(shotCounter);
+        }
+        if (shotCounters.size() == 0) {
+            shotCounterNodes.remove(set.getLocationName());
+        }
+    }
+
     public static void movePlayerToRole(String playerName, String roleName, boolean onCard) {
         ImageView playerNode = playerNodes.get(playerName);
         playerNode.toFront();
@@ -534,10 +586,55 @@ public class GUIView extends Application {
     }
 
     public static void displayActInformation(int roll, boolean success) {
-        
+        String info = "Rolled: " + roll + "\n"; 
+        if (success) {
+            info += "Acting successful";
+        } else {
+            info += "Acting failed"; 
+        }
+        actInfo.setText(info);
     }
 
-    public static void wrapScene() {
-        
+    public static void clearActInformation() {
+        actInfo.setText("");
+    }
+
+    public static void removeScene(Set set) {
+        Button locationButton = locationNodes.get(set.getLocationName());
+        locationButton.setBackground(transparentBackground);
+        ArrayList<Button> onCardRoles = onCardRoleNodes.get(set.getLocationName());
+        if (onCardRoles != null) {
+            for (int i = 0; i < onCardRoles.size(); i++) {
+                boardGroup.getChildren().remove(onCardRoles.get(i));
+            }
+        }
+        ArrayList<ImageView> shotCounters = shotCounterNodes.get(set.getLocationName());
+        if (shotCounters != null) {
+            for (int i = 0; i < shotCounters.size(); i++) {
+                boardGroup.getChildren().remove(shotCounters.get(i));
+            }
+        }
+        shotCounterNodes.remove(set.getLocationName());
+        onCardRoleNodes.remove(set.getLocationName());
+    }
+
+    public static void displayWinners() {
+
+    }
+
+    public static void resetBoard(BoardController board) {
+        ArrayList<Location> locations = board.getBoardLocations();
+        ArrayList<Set> sets = board.getBoardSets();
+        try {
+            createLocations(locations);
+            createShotCounters(sets);
+        } catch (Exception e) {
+            System.out.println("Error resetting board");
+            e.printStackTrace();
+        }
+        String[] playerNames = {"Blue", "Cyan", "Green", "Orange", "Pink", "Red", "Violet", "Yellow", "White"};
+        for (int i = 0; i < playerNodes.size(); i++) {
+            playerNodes.get(playerNames[i]).toFront();
+        }
     }
 }

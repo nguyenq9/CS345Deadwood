@@ -46,6 +46,8 @@ public class Set implements Location {
                 player.setPlayerSet(null);
                 player.setPlayerRehearsals(0);
             }
+            getRoles().get(i).setActor(null);
+            getRoles().get(i).setIsTaken(false);
         }
 
         for (int i = 0; i < sceneRoles.size(); i++) {
@@ -57,9 +59,16 @@ public class Set implements Location {
                 player.setPlayerSet(null);
                 player.setPlayerRehearsals(0);
             }
+            sceneRoles.get(i).setActor(null);
+            sceneRoles.get(i).setIsTaken(false);
         }
         
         Deadwood.decrementActiveScenes();
+    }
+
+    public void unwrapScene() {
+        setIsWrapped(false);
+        resetShotCounters();
     }
 
     public ArrayList<Location> getAdjacentLocations() {

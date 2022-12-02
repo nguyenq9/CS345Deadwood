@@ -173,7 +173,7 @@ public class Deadwood {
         hasTaken = false;
         hasWorked = false;
         isWorking = player.getPlayerIsWorking();
-        currSet = getSet(player.getPlayerLocation());
+        currSet = player.getSet(player.getPlayerLocation());
         if (currSet != null) {
             inSet = true;
             isWrapped = currSet.getIsWrapped();
@@ -185,28 +185,58 @@ public class Deadwood {
 
     public static void moveButtonClicked() {
         if (verifyAction(ActionType.MOVE) && !isWorking) {
-            player.move();
+            ArrayList<Role> roles = player.getAvailableRoles();
+            GUIView.clearHighlightRoles(roles);
+            GUIView.highlightLocations(player.getPlayerLocation().getAdjacentLocations());
             isMoving = true;
         }
     }
 
+    public static void locationClicked(Location location) {
+        if (verifyAction(ActionType.LOCATION) && !hasMoved) {
+            if (player.getPlayerLocation().getAdjacentLocations().contains(location)) {
+                player.move(location);
+                currSet = player.getSet(location);
+                if (currSet != null) {
+                    isWrapped = currSet.getIsWrapped();
+                    if (!currSet.getScene().getVisible()) {
+                        currSet.getScene().setVisible(true);
+                        GUIView.revealSet(currSet);
+                    }
+                    inSet = true;
+                }
+                hasMoved = true;
+                inOffice = player.getPlayerLocation().getLocationName().toLowerCase().equals("office");
+            } else {
+                return;
+            }
+        }
+    }
+
     public static void takeButtonClicked() {
+        System.out.println("outside take");
         if (verifyAction(ActionType.TAKE) && !hasTaken) {
-            player.take();
+            System.out.println("inside take");
+            GUIView.clearHightlightLocations(player.getPlayerLocation().getAdjacentLocations());
+            ArrayList<Role> roles = player.getAvailableRoles();
+            if (!roles.isEmpty()) {
+                GUIView.highlightRoles(roles);
+            } else {
+                System.out.println("Available roles is null");
+            }
             isTaking = true;
         }
     }
 
     public static void roleClicked(Role role) {
         if (verifyAction(ActionType.ROLE) && !hasTaken) {
-            player.role(role);
+            System.out.println("inside role");
+            player.take(role);
             hasTaken = true;
         }
     }
 
     public static void actButtonClicked() {
-        player.addPlayerDollars(5);
-        player.addPlayerCredits(5);
         if (verifyAction(ActionType.ACT) && !hasWorked) {
             player.act();
             hasWorked = true;
@@ -222,179 +252,71 @@ public class Deadwood {
 
     public static void upgradeButtonClicked() {
         if (verifyAction(ActionType.UPGRADE)) {
-            GUIView.highlightUpgrades(board.getBoardOffice().getAvailableUpgrades(player.getPlayerRank(), player.getPlayerDollars(), player.getPlayerCredits()));
-            System.out.println("UPGRADING");
+            player.upgrade();
             isUpgrading = true;
-        }
-    }
-
-    public static void endTurnButtonClicked() {
-        if (verifyAction(ActionType.END)) {
-            GUIView.clearHightlightLocations(player
-            .getPlayerLocation().getAdjacentLocations());
-            ArrayList<Role> roles = player.getAvailableRoles();
-            GUIView.clearHighlightRoles(roles);
-            playerIndex++;
-            if (playerIndex >= playerCount) {
-                playerIndex = 0;
-            }
-            player = players.get(playerIndex);
-            GUIView.displayPlayerInfo(player.getPlayerName(), player.getPlayerRank(),
-            player.getPlayerDollars(), player.getPlayerCredits(), player.getPlayerRehearsals());
-            resetBools();
-        }
-    }
-
-    public static void locationClicked(Location location) {
-        if (verifyAction(ActionType.LOCATION) && !hasMoved) {
-            if (player.getPlayerLocation().getAdjacentLocations().contains(location)) {
-                GUIView.clearHightlightLocations(player
-                .getPlayerLocation().getAdjacentLocations());
-                Location prevLocation = player.getPlayerLocation();
-                player.setPlayerLocation(location);
-                GUIView.updatePlayerLocation(prevLocation);
-                GUIView.updatePlayerLocation(location);
-                currSet = getSet(location);
-                if (currSet != null) {
-                    // player.setPlayerSet(currSet);
-                    if (!currSet.getScene().getVisible()) {
-                        currSet.getScene().setVisible(true);
-                        GUIView.revealSet(currSet);
-                    }
-                    inSet = true;
-                }
-                hasMoved = true;
-                inOffice = player.getPlayerLocation().getLocationName().toLowerCase().equals("office");
-            } else {
-                return;
-            }
         }
     }
 
     public static void upgradeChoiceClicked(int rank, Currency currency) {
         if (verifyAction(ActionType.UPGRADING)) {
-            GUIView.clearHighlightUpgrades();
+            player.upgradeChoice(rank, currency);
         }
     }
 
-    public static Set getSet(Location location) {
-        ArrayList<Set> boardSets = board.getBoardSets();
-        Set currSet = null;
-        for (int i = 0; i < boardSets.size(); i++) {
-            if (boardSets.get(i).getLocationName().toLowerCase().equals(player.
-                getPlayerLocation().getLocationName().toLowerCase())) {
-                    currSet = boardSets.get(i);
+    public static void endTurnButtonClicked() {
+        if (verifyAction(ActionType.END)) {
+            player.clearHighlighting();
+            GUIView.clearHighlightUpgrades();
+            playerIndex++;
+            if (playerIndex >= playerCount) {
+                playerIndex = 0;
             }
-        }
+            player = players.get(playerIndex);
+            player.updatePlayerGUI();
 
-        return currSet;
+            System.out.println("Scenes remaining: " + activeScenes);
+            if (activeScenes == 1) {
+                currDay++;
+                if (currDay == maxDays) {
+                    // end game
+                    GUIView.displayWinners();
+                    System.out.println("HEHEHEHE");
+                } else {
+                    removeLastScene();
+                    board.getBoardTrailer().resetPlayerLocations(players);
+                    setup.assignScenes(board, cardScenes);
+                    GUIView.updatePlayerLocation(board.getBoardTrailer());
+                    GUIView.resetBoard(board);
+                    GUIView.displayCurrentDay(currDay);
+                    unwrapAllScenes();
+                    activeScenes = 10;
+                }
+            }
+            resetBools();
+        }
+    }
+
+    private static void unwrapAllScenes() {
+        ArrayList<Set> sets = board.getBoardSets();
+        for (int i = 0; i < sets.size(); i++) {
+            sets.get(i).unwrapScene();
+        }
     }
 
     public static void decrementActiveScenes() {
         activeScenes--;
     }
 
+    public static void removeLastScene() {
+        for (Set s: board.getBoardSets()) {
+            if (s.getIsWrapped() == false) {
+                GUIView.removeScene(s);
+            }
+        }
+    }
+
 }
 
-// int playerIndex = 0;
-// // main game loop
-// for (int i = 0; i < maxDays; i++) {
-//     currDay = i+1;
-//     activeScenes = board.getBoardSets().size();
-//     gameView.displayCurrentDay(currDay);
-
-//     // this loop iterates when a day ends
-//     while (activeScenes > 1) {
-//         PlayerController player = players.get(playerIndex);
-//         ActionType action;
-//         gameView.displayTurn(player.getPlayerName());
-//         boolean hasMoved = false;
-//         boolean hasTaken = false;
-//         boolean hasWorked = false;
-
-//         // controls the players inputs and makes sure they are taking a valid turn
-//         do {
-//             boolean isWorking = player.getPlayerIsWorking();
-//             action = GameView.getPlayerInput();
-//             switch (action) {
-//                 case HELP:
-//                     gameView.displayHelp();
-//                     break;
-//                 case MOVE:
-//                     if (hasMoved) {
-//                         gameView.displayErrorMessage(ErrorType.ALREADY_MOVED);
-//                     } else if (isWorking) {
-//                         gameView.displayErrorMessage(ErrorType.MOVE_WHILE_WORKING);
-//                         break;
-//                     } else if (hasWorked) {
-//                         gameView.displayErrorMessage(ErrorType.WORK_AND_MOVE);
-//                     } else {
-//                         hasMoved = player.move();
-//                     }
-//                     break;
-//                 case TAKE:
-//                     if (isWorking) {
-//                         gameView.displayErrorMessage(ErrorType.TAKE_WHILE_WORKING);
-//                     } else {
-//                         hasTaken = player.take();
-//                     }
-//                     break;
-//                 case ACT:
-//                     if (hasWorked) {
-//                         gameView.displayErrorMessage(ErrorType.ALREADY_WORKED);
-//                     } else if (!isWorking) {
-//                         gameView.displayErrorMessage(ErrorType.ACT_WHILE_NOT_WORKING);
-//                     } else if (hasTaken) {
-//                         gameView.displayErrorMessage(ErrorType.TAKE_AND_WORK);
-//                     } else {
-//                         hasWorked = player.act();
-//                     }
-//                     break;
-//                 case REHEARSE:
-//                     if (hasWorked) {
-//                         gameView.displayErrorMessage(ErrorType.ALREADY_WORKED);
-//                     } else if (!isWorking) {
-//                         gameView.displayErrorMessage(ErrorType.REHEARSE_WHILE_NOT_WORKING);
-//                     } else if (hasTaken) {
-//                         gameView.displayErrorMessage(ErrorType.TAKE_AND_WORK);
-//                     } else {
-//                         hasWorked = player.rehearse();
-//                     }
-//                     break;
-//                 case UPGRADE:
-//                     player.upgrade();
-//                     break;
-//                 case SCENE:
-//                     gameView.displaySetInfo(player.getPlayerLocation().getLocationName(), board);
-//                     break;
-//                 case WHERE:
-//                     gameView.displayCurrentLocation(players.get(playerIndex).getPlayerLocation().getLocationName());
-//                     break;
-//                 case WHO:
-//                     gameView.displayCurrentDetails(player.getPlayerName(), player.getPlayerRank(), player.getPlayerDollars(), player.getPlayerCredits(),
-//                     player.getPlayerRehearsals(), player.getPlayerLocation().getLocationName(), player.getPlayerRole());
-//                     break;
-//                 case DETAILS:
-//                     for (int j = 0; j < players.size(); j++) {
-//                         PlayerController p = players.get(j);
-//                         gameView.displayDetails(p.getPlayerName(), p.getPlayerRank(), p.getPlayerDollars(), p.getPlayerCredits(),
-//                             p.getPlayerRehearsals(), p.getPlayerLocation().getLocationName(), p.getPlayerRole());
-//                     }
-//                     break;
-//                 case END:
-//                     break;
-//             }
-//         } while (action != ActionType.END);
-
-//         // next player turn
-//         playerIndex++;
-//         if (playerIndex >= playerCount) {
-//             playerIndex = 0;
-//         }
-//     }
-//     board.getBoardTrailer().resetPlayerLocations(players);
-//     gameView.displayEndDay(currDay);
-// }
 // // display winners when the game is over
 // ArrayList<String> winners = ScoreCalculator.getWinners(players);
 // gameView.displayWinners(winners);

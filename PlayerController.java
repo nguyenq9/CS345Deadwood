@@ -13,23 +13,15 @@ public class PlayerController {
     }
 
     // returns true if the player successfully moves, or false if they don't
-    public void move() {
-        ArrayList<Role> roles = getAvailableRoles();
-        GUIView.clearHighlightRoles(roles);
-        GUIView.highlightLocations(getPlayerLocation().getAdjacentLocations());
-    }
-
-    public void take() {
+    public void move(Location location) {
         GUIView.clearHightlightLocations(getPlayerLocation().getAdjacentLocations());
-        ArrayList<Role> roles = getAvailableRoles();
-        if (!roles.isEmpty()) {
-            GUIView.highlightRoles(roles);
-        } else {
-            System.out.println("Available roles is null");
-        }
+        Location prevLocation = getPlayerLocation();
+        setPlayerLocation(location);
+        GUIView.updatePlayerLocation(prevLocation);
+        GUIView.updatePlayerLocation(location);
     }
 
-    public void role(Role role) {
+    public void take(Role role) {
         ArrayList<Role> roles = getAvailableRoles();
         if (roles.contains(role)) {
             setPlayerRole(role);
@@ -40,33 +32,46 @@ public class PlayerController {
         role.setIsTaken(true);
     }
 
-    // returns true if the player successfully upgrades, or false if they don't
-    public boolean upgrade() {
-        CastingOffice office = boardController.getBoardOffice();
-        playerView.displayUpgradeOptions(getPlayerRank(), office.getUpgradeDollarCosts(), office.getUpgradeCreditCosts());
-        int choiceRank = playerView.getUpgradeOption();
-        if (choiceRank <= 6 && choiceRank > this.getPlayerRank()) {
-            Currency currency = playerView.getUpgradeCurrency();
-            if (currency == Currency.CREDITS) {
-                int creditCost = office.getCreditUpgradeCost(choiceRank);
-                if (getPlayerCredits() >= creditCost) {
-                    setPlayerRank(choiceRank);
-                    setPlayerCredits(getPlayerCredits() - creditCost);
-                    playerView.displayUpgradeOutcome(choiceRank);
-                    return true;
-                }
-            } else if (currency == Currency.DOLLARS) {
-                int dollarCost = office.getDollarUpgradeCost(choiceRank);
-                if (getPlayerDollars() >= dollarCost) {
-                    setPlayerRank(choiceRank);
-                    setPlayerDollars(getPlayerDollars() - dollarCost); 
-                    playerView.displayUpgradeOutcome(choiceRank);
-                    return true;
-                }
-            } 
+    // returns true if the player successfully acts (regardless of if the acting suceeds or fails), or false if they fail to act
+    public boolean act() {
+        Location location = getPlayerLocation();
+        Set currSet = getSet(location);
+
+        if (currSet == null)  {
+            return false;
         }
-        playerView.displayErrorMessage(ErrorType.INVALID_RANK);
-        return false;
+
+        int roll = Dice.roll() + getPlayerRehearsals();
+        int budget = currSet.getScene().getBudget();
+        boolean success = roll >= budget;
+
+        // TEMPORARY
+        success = true;
+
+        GUIView.displayActInformation(roll, success);
+        playerView.displayActRoll(roll);
+        playerView.displayActingOutcome(getPlayerRole().getRoleLine(), success);
+
+        bank.payActingRewards(this, getPlayerRole().getOnCard(), success);
+        updatePlayerGUI();
+
+        if (success) {
+            GUIView.removeShotCounter(currSet);
+            currSet.decrementShotCounters();
+            if (currSet.getShotCounters() == 0) {
+                playerView.displaySceneWrapped();
+
+                ArrayList<PlayerController> players = currSet.getPlayers();
+                for (PlayerController i : players) {
+                    i.setPlayerIsWorking(false);
+                    i.setPlayerSet(null);
+                }
+                
+                currSet.wrapScene();
+                GUIView.removeScene(currSet);
+            }
+        }
+        return true;
     }
 
     // returns true if the eplayer successfully rehearses, or false if they don't
@@ -88,31 +93,43 @@ public class PlayerController {
         }
     }
 
-    // returns true if the player successfully acts (regardless of if the acting suceeds or fails), or false if they fail to act
-    public boolean act() {
-        Set set = getPlayerSet();
-        int roll = Dice.roll() + getPlayerRehearsals();
-        int budget = set.getScene().getBudget();
-        boolean success = roll >= budget;
+    public void upgrade() {
+        GUIView.highlightUpgrades(boardController.getBoardOffice().getAvailableUpgrades(getPlayerRank(),
+        getPlayerDollars(), getPlayerCredits()));
+    }
 
-        GUIView.displayActInformation(roll, success);
-        playerView.displayActRoll(roll);
-        playerView.displayActingOutcome(getPlayerRole().getRoleLine(), success);
-
-        bank.payActingRewards(this, getPlayerRole().getOnCard(), success);
-        GUIView.displayPlayerInfo(getPlayerName(), getPlayerRank(),
-            getPlayerDollars(), getPlayerCredits(), getPlayerRehearsals());
-        
-        if (success) {
-            set.decrementShotCounters();
-            if (set.getShotCounters() == 0) {
-                playerView.displaySceneWrapped();
-                set.wrapScene();
-                GUIView.wrapScene();
-            }
+    // returns true if the player successfully upgrades, or false if they don't
+    public void upgradeChoice(int choiceRank, Currency currency) {
+        CastingOffice office = boardController.getBoardOffice();
+        if (choiceRank <= 6 && choiceRank > this.getPlayerRank()) {
+            if (currency == Currency.CREDITS) {
+                int creditCost = office.getCreditUpgradeCost(choiceRank);
+                if (getPlayerCredits() >= creditCost) {
+                    setPlayerRank(choiceRank);
+                    setPlayerCredits(getPlayerCredits() - creditCost);
+                    playerView.displayUpgradeOutcome(choiceRank);
+                    GUIView.updatePlayerRank(getPlayerName(), choiceRank);
+                }
+            } else if (currency == Currency.DOLLARS) {
+                int dollarCost = office.getDollarUpgradeCost(choiceRank);
+                if (getPlayerDollars() >= dollarCost) {
+                    setPlayerRank(choiceRank);
+                    setPlayerDollars(getPlayerDollars() - dollarCost); 
+                    playerView.displayUpgradeOutcome(choiceRank);
+                    GUIView.updatePlayerRank(getPlayerName(), choiceRank);
+                }
+            } 
         }
 
-        return true;
+        GUIView.clearHighlightUpgrades();
+        updatePlayerGUI();
+    }
+
+    public void clearHighlighting() {
+        GUIView.clearHightlightLocations(getPlayerLocation().getAdjacentLocations());
+        ArrayList<Role> roles = getAvailableRoles();
+        GUIView.clearHighlightRoles(roles);
+        GUIView.clearActInformation();
     }
 
     public ArrayList<Role> getAvailableRoles() {
@@ -155,6 +172,11 @@ public class PlayerController {
         }
 
         return currSet;
+    }
+
+    public void updatePlayerGUI() {
+        GUIView.displayPlayerInfo(getPlayerName(), getPlayerRank(),
+            getPlayerDollars(), getPlayerCredits(), getPlayerRehearsals());
     }
 
     public String getPlayerName() {
