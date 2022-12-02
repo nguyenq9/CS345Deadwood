@@ -1,11 +1,7 @@
 import java.io.FileInputStream;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-
-import javax.swing.Action;
-
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -26,15 +22,15 @@ public class GUIView extends Application {
     private static BoardController board;
     private static double scale;
 
-    private static Text playerInfo;
-    private static Text dayNum;
-    private static Text actInfo;
-
     private static Text currentPlayer;
     private static Text playerRank;
     private static Text playerDollars;
     private static Text playerCredits;
     private static Text playerTokens;
+    private static Text dayNum;
+    private static Text actRoll;
+    private static Text actOutcome;
+    private static HashMap<String, Color> playerColors = new HashMap<String, Color>();
 
     private static int playerCount;
     private static Stage stage;
@@ -73,6 +69,15 @@ public class GUIView extends Application {
                 diceImages[i][j] = new Image(new FileInputStream(("resources/dice/" + colors[i] + (j + 1) + ".png")));
             }
         }
+        playerColors.put("Blue", Color.BLUE);
+        playerColors.put("Cyan", Color.CYAN);
+        playerColors.put("Green", Color.GREEN);
+        playerColors.put("Orange", Color.ORANGE);
+        playerColors.put("Pink", Color.PINK);
+        playerColors.put("Red", Color.RED);
+        playerColors.put("Violet", Color.VIOLET);
+        playerColors.put("Yellow", Color.YELLOW);
+        playerColors.put("White", Color.WHITE);
         launch();
     }
 
@@ -95,7 +100,7 @@ public class GUIView extends Application {
         sound = new Media(new File("resources/gamemusic.mp3").toURI().toString());
         mediaPlayer = new MediaPlayer(sound);
         mediaPlayer.setVolume(0.05);
-        mediaPlayer.setCycleCount(mediaPlayer.INDEFINITE);
+        mediaPlayer.setCycleCount(MediaPlayer.INDEFINITE);
         mediaPlayer.play();
 
         stage = mainStage;
@@ -105,7 +110,7 @@ public class GUIView extends Application {
         mainStage.getIcons().add(new Image(new FileInputStream("resources/shot.png")));
 
         // Create a root node to display
-        AnchorPane root = new AnchorPane();
+        root = new AnchorPane();
         // Back the default background black instead of white (for the sake of my eyes)
         root.setBackground(new Background(new BackgroundFill(Color.BLACK, null, null)));
 
@@ -131,9 +136,9 @@ public class GUIView extends Application {
             // Set the size and coordinates of the button to their appropriate values
             button.setPrefHeight(100 * scale);
             button.setPrefWidth(200 * scale);
-            root.setLeftAnchor(button, 400 * scale);
-            root.setRightAnchor(button, 400 * scale);
-            root.setTopAnchor(button, 150 * (i - 1) * scale);
+            AnchorPane.setLeftAnchor(button, 400 * scale);
+            AnchorPane.setRightAnchor(button, 400 * scale);
+            AnchorPane.setTopAnchor(button, 150 * (i - 1) * scale);
 
             // Add the button to the board panel
             root.getChildren().add(button);
@@ -143,9 +148,9 @@ public class GUIView extends Application {
         playerText.setTextAlignment(TextAlignment.RIGHT);
         playerText.setFill(Color.WHITE);
         playerText.setFont(deadwoodFonts[3]);
-        root.setTopAnchor(playerText, 50 * scale);
-        root.setLeftAnchor(playerText, 400 * scale);
-        root.setRightAnchor(playerText, 400 * scale);
+        AnchorPane.setTopAnchor(playerText, 50 * scale);
+        AnchorPane.setLeftAnchor(playerText, 400 * scale);
+        AnchorPane.setRightAnchor(playerText, 400 * scale);
         root.getChildren().add(playerText);
 
         // Set the application to display the root node
@@ -188,14 +193,22 @@ public class GUIView extends Application {
         createUpgrades(Currency.DOLLARS, board.getBoardOffice().getUpgradeAreaDollar());
         
         // Add the board panel to the root node
-        root.setBottomAnchor(boardGroup, 0d);
-        root.setRightAnchor(boardGroup, 0d);
+        AnchorPane.setBottomAnchor(boardGroup, 0d);
+        AnchorPane.setRightAnchor(boardGroup, 0d);
         root.getChildren().add(boardGroup);
 
         // Create text elements
-        playerInfo = createText("", Color.WHITE, deadwoodFonts[2], 1200, 20);
-        dayNum = createText("", Color.WHITE, deadwoodFonts[4], 75, 50);
-        actInfo = createText("", Color.WHITE, deadwoodFonts[1], 100, 150);
+        // playerInfo = createText("", Color.WHITE, deadwoodFonts[2], 1200, 20);
+
+        currentPlayer = createText("Current Player: ", Color.WHITE, deadwoodFonts[4], 50, 50);
+        playerDollars = createText("Dollars: 0", Color.WHITE, deadwoodFonts[2], 50, 150);
+        playerCredits = createText("Credits: 0", Color.WHITE, deadwoodFonts[2], 50, 210);
+        playerRank = createText("Rank: 1", Color.WHITE, deadwoodFonts[2], 350, 150);
+        playerTokens = createText("Rehearsals: 0", Color.WHITE, deadwoodFonts[2], 350, 210);
+        
+        dayNum = createText("Day 1", Color.WHITE, deadwoodFonts[4], 1300, 50);
+        actRoll = createText("", Color.WHITE, deadwoodFonts[2], 800, 150);
+        actOutcome = createText("", Color.WHITE, deadwoodFonts[2], 800, 210);
 
         createButton("Move", 50, 325, new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
@@ -241,8 +254,8 @@ public class GUIView extends Application {
         Text textNode = new Text(text);
         textNode.setFill(color);
         textNode.setFont(font);
-        root.setLeftAnchor(textNode, posX * scale);
-        root.setTopAnchor(textNode, posY * scale);
+        AnchorPane.setLeftAnchor(textNode, posX * scale);
+        AnchorPane.setTopAnchor(textNode, posY * scale);
         root.getChildren().add(textNode);
         return textNode;
     }
@@ -271,8 +284,8 @@ public class GUIView extends Application {
             // Set the size and coordinates of the button to their appropriate values
             locationButton.setPrefHeight(location.getLocationArea()[2] * scale);
             locationButton.setPrefWidth(location.getLocationArea()[3] * scale);
-            boardGroup.setLeftAnchor(locationButton, location.getLocationArea()[0] * scale);
-            boardGroup.setTopAnchor(locationButton, location.getLocationArea()[1] * scale);
+            AnchorPane.setLeftAnchor(locationButton, location.getLocationArea()[0] * scale);
+            AnchorPane.setTopAnchor(locationButton, location.getLocationArea()[1] * scale);
 
             locationNodes.put(location.getLocationName(), locationButton);
 
@@ -307,8 +320,8 @@ public class GUIView extends Application {
             roleButton.setMinWidth(role.getArea()[3] * scale);
             roleButton.setPrefHeight(role.getArea()[2] * scale);
             roleButton.setPrefWidth(role.getArea()[3] * scale);
-            boardGroup.setLeftAnchor(roleButton, role.getArea()[0] * scale);
-            boardGroup.setTopAnchor(roleButton, role.getArea()[1] * scale);
+            AnchorPane.setLeftAnchor(roleButton, role.getArea()[0] * scale);
+            AnchorPane.setTopAnchor(roleButton, role.getArea()[1] * scale);
 
             String roleID = getRoleId(role.getRoleName(), role.getRank(), locationName);
             roleNodes.put(roleID, roleButton);            // Add the button to the board panel
@@ -356,8 +369,8 @@ public class GUIView extends Application {
         button.setFont(deadwoodFonts[2]);
         button.setPrefHeight(100 * scale);
         button.setPrefWidth(300 * scale);
-        boardGroup.setLeftAnchor(button, xPos * scale);
-        boardGroup.setTopAnchor(button, yPos * scale);
+        AnchorPane.setLeftAnchor(button, xPos * scale);
+        AnchorPane.setTopAnchor(button, yPos * scale);
         // Set the button to call Deadwood.MoveButtonClicked when Clicked
         button.setOnAction(event);
         root.getChildren().add(button);
@@ -373,8 +386,8 @@ public class GUIView extends Application {
             upgradeButton.setMinWidth(areas[i][3] * scale);
             upgradeButton.setPrefHeight(areas[i][2] * scale);
             upgradeButton.setPrefWidth(areas[i][3] * scale);
-            boardGroup.setLeftAnchor(upgradeButton, areas[i][0] * scale);
-            boardGroup.setTopAnchor(upgradeButton, areas[i][1] * scale);
+            AnchorPane.setLeftAnchor(upgradeButton, areas[i][0] * scale);
+            AnchorPane.setTopAnchor(upgradeButton, areas[i][1] * scale);
             // Set the button to call Deadwood.MoveButtonClicked when Clicked
             upgradeButton.setOnAction(new EventHandler<ActionEvent>() {
                 public void handle(ActionEvent event) {
@@ -391,9 +404,12 @@ public class GUIView extends Application {
     }
 
     public static void displayPlayerInfo(String name, int rank, int dollars, int credits, int rehearsals) {
-        String info = "Player: " + name + "\nRank: " + rank + "\nDollars: "
-                        + dollars + "\nCredits: " + credits + "\nRehearsals: " + rehearsals;
-        playerInfo.setText(info);
+        currentPlayer.setText("Current Player: " + name);
+        currentPlayer.setFill(playerColors.get(name));
+        playerRank.setText("Rank: " + rank);
+        playerDollars.setText("Dollars: " + dollars);
+        playerCredits.setText("Credits: " + credits);
+        playerTokens.setText("Rehearsals: " + rehearsals);
     }
 
     public static void displayCurrentDay(int currDay) {
@@ -428,8 +444,8 @@ public class GUIView extends Application {
                 roleButton.setMinWidth(role.getArea()[3] * scale);
                 roleButton.setPrefHeight(role.getArea()[2] * scale);
                 roleButton.setPrefWidth(role.getArea()[3] * scale);
-                boardGroup.setLeftAnchor(roleButton, locationButton.getLayoutX() + (role.getArea()[0]) * scale);
-                boardGroup.setTopAnchor(roleButton, locationButton.getLayoutY() + (role.getArea()[1]) * scale);
+                AnchorPane.setLeftAnchor(roleButton, locationButton.getLayoutX() + (role.getArea()[0]) * scale);
+                AnchorPane.setTopAnchor(roleButton, locationButton.getLayoutY() + (role.getArea()[1]) * scale);
     
                 // Add the button to the board panel
                 String roleID = getRoleId(role.getRoleName(), role.getRank(), set.getLocationName());
@@ -516,18 +532,18 @@ public class GUIView extends Application {
                 if (location.getLocationName().equals("trailer")) {
                     playerNode.setFitWidth(50 * scale);
                     playerNode.setFitHeight(50 * scale);
-                    boardGroup.setLeftAnchor(playerNode, (location.getLocationArea()[0] + 15 + 60 * ((standingPlayerCount % 3))) * scale);
-                    boardGroup.setTopAnchor(playerNode, (location.getLocationArea()[1] + 15 + 60 * ((standingPlayerCount / 3))) * scale);
+                    AnchorPane.setLeftAnchor(playerNode, (location.getLocationArea()[0] + 15 + 60 * ((standingPlayerCount % 3))) * scale);
+                    AnchorPane.setTopAnchor(playerNode, (location.getLocationArea()[1] + 15 + 60 * ((standingPlayerCount / 3))) * scale);
                 } else if (location.getLocationName().equals("office")){
                     playerNode.setFitWidth(20 * scale);
                     playerNode.setFitHeight(20 * scale);
-                    boardGroup.setLeftAnchor(playerNode, (location.getLocationArea()[0] + 5) * scale);
-                    boardGroup.setTopAnchor(playerNode, (location.getLocationArea()[1] + location.getLocationArea()[2] - 25d - standingPlayerCount * 25) * scale);
+                    AnchorPane.setLeftAnchor(playerNode, (location.getLocationArea()[0] + 5) * scale);
+                    AnchorPane.setTopAnchor(playerNode, (location.getLocationArea()[1] + location.getLocationArea()[2] - 25d - standingPlayerCount * 25) * scale);
                 } else {
                     playerNode.setFitWidth(20 * scale);
                     playerNode.setFitHeight(20 * scale);
-                    boardGroup.setLeftAnchor(playerNode, (location.getLocationArea()[0] + 5 + standingPlayerCount * 25) * scale);
-                    boardGroup.setTopAnchor(playerNode, (location.getLocationArea()[1] + location.getLocationArea()[2] - 25d) * scale);
+                    AnchorPane.setLeftAnchor(playerNode, (location.getLocationArea()[0] + 5 + standingPlayerCount * 25) * scale);
+                    AnchorPane.setTopAnchor(playerNode, (location.getLocationArea()[1] + location.getLocationArea()[2] - 25d) * scale);
                 }
                 standingPlayerCount++;
             }
@@ -590,22 +606,22 @@ public class GUIView extends Application {
             playerNode.setFitWidth(46 * scale);
             playerNode.setFitHeight(46 * scale);
         }
-        boardGroup.setLeftAnchor(playerNode, (roleNode.getLayoutX()));
-        boardGroup.setTopAnchor(playerNode, (roleNode.getLayoutY()));
+        AnchorPane.setLeftAnchor(playerNode, (roleNode.getLayoutX()));
+        AnchorPane.setTopAnchor(playerNode, (roleNode.getLayoutY()));
     }
 
     public static void displayActInformation(int roll, boolean success) {
-        String info = "Rolled: " + roll + "\n"; 
+        actRoll.setText("Rolled a " + roll);
         if (success) {
-            info += "Acting successful";
+            actOutcome.setText("Acting successful!");
         } else {
-            info += "Acting failed"; 
+            actOutcome.setText("Acting Failed...");
         }
-        actInfo.setText(info);
     }
 
     public static void clearActInformation() {
-        actInfo.setText("");
+        actRoll.setText("");
+        actOutcome.setText("");
     }
 
     public static void removeScene(Set set) {
@@ -627,15 +643,29 @@ public class GUIView extends Application {
         onCardRoleNodes.remove(set.getLocationName());
     }
 
-    public static void displayWinners() {
+    public static void displayWinners(ArrayList<String> winners) {
+        root = new AnchorPane();
+        root.setBackground(new Background(new BackgroundFill(Color.BLACK, null, null)));
+        if (winners.size() == 1) {
+            createText("The winner is: ", Color.WHITE, deadwoodFonts[4], 100, 100);
+        } else {
+            createText("The winners are: ", Color.WHITE, deadwoodFonts[4], 100, 100);
+        }
+        for (int i = 0; i < winners.size(); i++) {
+            createText(winners.get(i), playerColors.get(winners.get(i)), deadwoodFonts[3], 100, 250 + 100 * i);
+        }
 
+        stage.setScene(new javafx.scene.Scene(root, 1600 * scale, 1200 * scale));
     }
 
     public static void resetBoard(BoardController board) {
-        ArrayList<Location> locations = board.getBoardLocations();
         ArrayList<Set> sets = board.getBoardSets();
+        ArrayList<Location> setLocations = new ArrayList<Location>();
+        for (int i = 0; i < sets.size(); i++) {
+            setLocations.add(sets.get(i));
+        }
         try {
-            createLocations(locations);
+            createLocations(setLocations);
             createShotCounters(sets);
         } catch (Exception e) {
             System.out.println("Error resetting board");

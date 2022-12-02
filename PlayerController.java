@@ -35,6 +35,8 @@ public class PlayerController {
         if (roles.contains(role)) {
             setPlayerRole(role);
             setPlayerIsWorking(true);
+            role.setActor(this);
+            role.setIsTaken(true);
             GUIView.movePlayerToRole(getPlayerName(), role.getRoleName(), role.getRank(), getPlayerLocation().getLocationName(), role.getOnCard());
             ArrayList<String> roleNames = new ArrayList<String>();
             ArrayList<Integer> roleRanks = new ArrayList<Integer>();
@@ -44,7 +46,6 @@ public class PlayerController {
             }
             GUIView.clearHighlightRoles(getPlayerLocation().getLocationName(), roleNames, roleRanks);
         }
-        role.setIsTaken(true);
     }
 
     // returns true if the player successfully acts (regardless of if the acting suceeds or fails), or false if they fail to act
@@ -59,9 +60,6 @@ public class PlayerController {
         int roll = Dice.roll() + getPlayerRehearsals();
         int budget = currSet.getScene().getBudget();
         boolean success = roll >= budget;
-
-        // TEMPORARY
-        success = true;
 
         GUIView.displayActInformation(roll, success);
         playerView.displayActRoll(roll);
@@ -293,6 +291,11 @@ public class PlayerController {
         getPlayerLocation().removePlayer(this);
         player.setLocation(newLocation);
         newLocation.addPlayer(this);
+    }
+
+    public void fire() {
+        setPlayerIsWorking(false);
+        setPlayerSet(null);
     }
 
 }

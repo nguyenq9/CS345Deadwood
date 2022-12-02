@@ -185,6 +185,7 @@ public class Deadwood {
 
     public static void moveButtonClicked() {
         if (verifyAction(ActionType.MOVE) && !isWorking) {
+            GUIView.clearHighlightUpgrades();
             ArrayList<Role> roles = player.getAvailableRoles();
             ArrayList<String> roleNames = new ArrayList<String>();
             ArrayList<Integer> roleRanks = new ArrayList<Integer>();
@@ -260,7 +261,9 @@ public class Deadwood {
     }
 
     public static void upgradeButtonClicked() {
+        System.out.println("sad");
         if (verifyAction(ActionType.UPGRADE)) {
+            System.out.println("bad");
             player.upgrade();
             isUpgrading = true;
         }
@@ -286,12 +289,15 @@ public class Deadwood {
             if (activeScenes == 1) {
                 currDay++;
                 if (currDay == maxDays) {
-                    // end game
-                    GUIView.displayWinners();
+                    ArrayList<String> winners = ScoreCalculator.getWinners(players);
+                    GUIView.displayWinners(winners);
                 } else {
                     removeLastScene();
                     board.getBoardTrailer().resetPlayerLocations(players);
                     setup.assignScenes(board, cardScenes);
+                    for (PlayerController p: players) {
+                        p.fire();
+                    }
                     GUIView.updatePlayerLocation(board.getBoardTrailer());
                     GUIView.resetBoard(board);
                     GUIView.displayCurrentDay(currDay);

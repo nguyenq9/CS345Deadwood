@@ -34,6 +34,7 @@ public class Set implements Location {
             if (sceneRoles.get(i).getActor() != null) {
                 bank.payBonusRewards(this);
                 break;
+            } else {
             }
         }
 
@@ -146,5 +147,6 @@ public class Set implements Location {
 	public void clearPlayers() {
 		players.clear();
 	}
+
 
 }
