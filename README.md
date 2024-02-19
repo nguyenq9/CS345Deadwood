@@ -8,6 +8,8 @@ Logan Giddings
 
 Thai Nguyen
 
+![](./Deadwood Recorded Presentation.mp4)
+
 ### Requirements
 1. Download JDK 19.00
 2. Have JavaFX downloaded, refer to https://openjfx.io/openjfx-docs/#install-javafx for installation
