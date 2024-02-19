@@ -8,7 +8,7 @@ Logan Giddings
 
 Thai Nguyen
 
-![](./Deadwood Recorded Presentation.mp4)
+![](./Deadwood-Recorded-Presentation.mp4)
 
 ### Requirements
 1. Download JDK 19.00
